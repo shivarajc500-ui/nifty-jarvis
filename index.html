@@ -105,6 +105,49 @@
     .indicator-row:last-child { border-bottom: none; }
     .ind-label { font-size: 13px; color: var(--muted); }
     .ind-value { font-size: 14px; font-weight: 700; }
+    /* Strategy Monitor Cards */
+    .strat-monitor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .strat-monitor-title { font-size: 18px; font-weight: 700; }
+    .strat-active-count { font-size: 12px; color: var(--muted); font-weight: 600; }
+    .signal-rule { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(0,212,170,0.08); border: 1px solid rgba(0,212,170,0.2); border-radius: 10px; margin-bottom: 14px; font-size: 12px; color: var(--primary); font-weight: 500; }
+    .strat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: border-color 0.2s; position: relative; overflow: hidden; }
+    .strat-card:active { opacity: 0.85; }
+    .strat-card.active-ce { border-color: rgba(0,212,170,0.4); }
+    .strat-card.active-pe { border-color: rgba(255,77,109,0.4); }
+    .strat-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .strat-card-left { display: flex; align-items: center; gap: 10px; }
+    .strat-card-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .strat-card-name { font-size: 15px; font-weight: 700; }
+    .strat-card-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .strat-status-badge { display: flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.3px; }
+    .strat-status-badge.inactive { background: rgba(255,255,255,0.06); color: var(--muted); }
+    .strat-status-badge.active-ce { background: rgba(0,212,170,0.15); color: var(--ce); }
+    .strat-status-badge.active-pe { background: rgba(255,77,109,0.15); color: var(--pe); }
+    .strat-status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+    .chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; min-width: 70px; }
+    .chip-label { font-size: 10px; color: var(--muted); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px; }
+    .chip-value { font-size: 14px; font-weight: 700; }
+    .tap-hint { font-size: 11px; color: var(--muted); text-align: right; margin-top: 4px; }
+    .strat-checked-time { font-size: 11px; color: var(--muted); text-align: right; margin-top: 6px; }
+    /* Bottom Sheet */
+    .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+    .sheet-overlay.open { opacity: 1; pointer-events: all; }
+    .bottom-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-radius: 20px 20px 0 0; z-index: 201; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.32,0.72,0,1); max-height: 85vh; overflow-y: auto; padding-bottom: calc(var(--safe-bottom) + 20px); }
+    .bottom-sheet.open { transform: translateY(0); }
+    .sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 16px; }
+    .sheet-header { display: flex; justify-content: space-between; align-items: center; padding: 0 18px 14px; border-bottom: 1px solid var(--border); }
+    .sheet-title { font-size: 18px; font-weight: 700; }
+    .sheet-close { width: 28px; height: 28px; border-radius: 50%; background: var(--surface2); border: none; color: var(--muted); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .sheet-body { padding: 16px 18px; }
+    .sheet-chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .sheet-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; min-width: 80px; }
+    .sheet-chip-label { font-size: 10px; color: var(--muted); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px; }
+    .sheet-chip-value { font-size: 16px; font-weight: 700; }
+    .sheet-section { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin: 16px 0 8px; }
+    .sheet-condition { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 13px; line-height: 1.5; }
+    .sheet-condition .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); flex-shrink: 0; margin-top: 5px; }
+    .sheet-warning { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); border-radius: 10px; padding: 10px 14px; font-size: 12px; color: var(--warning); line-height: 1.5; margin-top: 12px; }
     /* History */
     .hist-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
     .hist-left .inst { font-size: 12px; font-weight: 700; color: var(--muted); }
@@ -261,73 +304,90 @@
 
     <!-- STRATEGIES -->
     <div id="screen-strategies" class="screen">
-      <div class="card">
-        <div class="card-title">Trend + Pullback</div>
-        <div class="indicator-row">
-          <span class="ind-label">Status</span>
-          <span class="ind-value" id="st-trend-status">—</span>
+      <!-- Header -->
+      <div class="strat-monitor-header">
+        <div class="strat-monitor-title">Strategy Monitor</div>
+        <div class="strat-active-count" id="stratActiveCount">0/3 Active</div>
+      </div>
+      <!-- Signal rule -->
+      <div class="signal-rule">🟢 Signal fires only when <strong style="margin:0 4px">2+ strategies agree</strong> OR <strong style="margin:0 4px">1 strong + volume confirmation</strong></div>
+
+      <!-- TREND + PULLBACK CARD -->
+      <div class="strat-card" id="sc-trend" onclick="openSheet('trend')">
+        <div class="strat-card-header">
+          <div class="strat-card-left">
+            <div class="strat-card-icon">〜</div>
+            <div>
+              <div class="strat-card-name">Trend + Pullback</div>
+              <div class="strat-card-sub">EMA 20/50 + RSI 40–65</div>
+            </div>
+          </div>
+          <div class="strat-status-badge inactive" id="sb-trend"><div class="strat-status-dot"></div>INACTIVE</div>
         </div>
-        <div class="indicator-row">
-          <span class="ind-label">Direction</span>
-          <span class="ind-value" id="st-trend-dir">—</span>
+        <div class="chip-row">
+          <div class="chip"><div class="chip-label">EMA20</div><div class="chip-value" id="ch-trend-ema20">—</div></div>
+          <div class="chip"><div class="chip-label">EMA50</div><div class="chip-value" id="ch-trend-ema50">—</div></div>
+          <div class="chip"><div class="chip-label">RSI</div><div class="chip-value" id="ch-trend-rsi">—</div></div>
+          <div class="chip"><div class="chip-label">Trend</div><div class="chip-value" id="ch-trend-dir">—</div></div>
         </div>
-        <div class="indicator-row">
-          <span class="ind-label">EMA 20</span>
-          <span class="ind-value" id="st-trend-ema20">—</span>
-        </div>
-        <div class="indicator-row">
-          <span class="ind-label">EMA 50</span>
-          <span class="ind-value" id="st-trend-ema50">—</span>
-        </div>
-        <div class="indicator-row">
-          <span class="ind-label">RSI</span>
-          <span class="ind-value" id="st-trend-rsi">—</span>
-        </div>
+        <div class="tap-hint">Tap for details ›</div>
+        <div class="strat-checked-time" id="ct-trend"></div>
       </div>
 
-      <div class="card">
-        <div class="card-title">Breakout</div>
-        <div class="indicator-row">
-          <span class="ind-label">Status</span>
-          <span class="ind-value" id="st-bo-status">—</span>
+      <!-- BREAKOUT CARD -->
+      <div class="strat-card" id="sc-breakout" onclick="openSheet('breakout')">
+        <div class="strat-card-header">
+          <div class="strat-card-left">
+            <div class="strat-card-icon">⚡</div>
+            <div>
+              <div class="strat-card-name">Breakout</div>
+              <div class="strat-card-sub">15-min High/Low + Volume</div>
+            </div>
+          </div>
+          <div class="strat-status-badge inactive" id="sb-breakout"><div class="strat-status-dot"></div>INACTIVE</div>
         </div>
-        <div class="indicator-row">
-          <span class="ind-label">Direction</span>
-          <span class="ind-value" id="st-bo-dir">—</span>
+        <div class="chip-row">
+          <div class="chip"><div class="chip-label">15m High</div><div class="chip-value" id="ch-bo-high">—</div></div>
+          <div class="chip"><div class="chip-label">15m Low</div><div class="chip-value" id="ch-bo-low">—</div></div>
+          <div class="chip"><div class="chip-label">Volume Spike</div><div class="chip-value" id="ch-bo-vol">—</div></div>
         </div>
-        <div class="indicator-row">
-          <span class="ind-label">15m High</span>
-          <span class="ind-value" id="st-bo-high">—</span>
-        </div>
-        <div class="indicator-row">
-          <span class="ind-label">15m Low</span>
-          <span class="ind-value" id="st-bo-low">—</span>
-        </div>
-        <div class="indicator-row">
-          <span class="ind-label">Volume Spike</span>
-          <span class="ind-value" id="st-bo-vol">—</span>
-        </div>
+        <div class="tap-hint">Tap for details ›</div>
+        <div class="strat-checked-time" id="ct-breakout"></div>
       </div>
 
-      <div class="card">
-        <div class="card-title">Reversal</div>
-        <div class="indicator-row">
-          <span class="ind-label">Status</span>
-          <span class="ind-value" id="st-rev-status">—</span>
+      <!-- REVERSAL CARD -->
+      <div class="strat-card" id="sc-reversal" onclick="openSheet('reversal')">
+        <div class="strat-card-header">
+          <div class="strat-card-left">
+            <div class="strat-card-icon">〜</div>
+            <div>
+              <div class="strat-card-name">Reversal</div>
+              <div class="strat-card-sub">RSI Extreme + S/R Zone</div>
+            </div>
+          </div>
+          <div class="strat-status-badge inactive" id="sb-reversal"><div class="strat-status-dot"></div>INACTIVE</div>
         </div>
-        <div class="indicator-row">
-          <span class="ind-label">Direction</span>
-          <span class="ind-value" id="st-rev-dir">—</span>
+        <div class="chip-row">
+          <div class="chip"><div class="chip-label">RSI</div><div class="chip-value" id="ch-rev-rsi">—</div></div>
+          <div class="chip"><div class="chip-label">Status</div><div class="chip-value" id="ch-rev-status">—</div></div>
+          <div class="chip"><div class="chip-label">At S/R</div><div class="chip-value" id="ch-rev-sr">—</div></div>
         </div>
-        <div class="indicator-row">
-          <span class="ind-label">RSI</span>
-          <span class="ind-value" id="st-rev-rsi">—</span>
-        </div>
-        <div class="indicator-row">
-          <span class="ind-label">At S/R Level</span>
-          <span class="ind-value" id="st-rev-sr">—</span>
-        </div>
+        <div class="tap-hint">Tap for details ›</div>
+        <div class="strat-checked-time" id="ct-reversal"></div>
       </div>
+    </div>
+
+    <!-- BOTTOM SHEET OVERLAY -->
+    <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
+
+    <!-- BOTTOM SHEET -->
+    <div class="bottom-sheet" id="bottomSheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title" id="sheetTitle">Strategy</div>
+        <div class="strat-status-badge inactive" id="sheetBadge"><div class="strat-status-dot"></div>INACTIVE</div>
+      </div>
+      <div class="sheet-body" id="sheetBody"></div>
     </div>
 
     <!-- HISTORY -->
@@ -554,24 +614,74 @@ function updateUI(signal, status, hist) {
     }
   });
 
-  // Strategy detail
+  // Strategy Monitor Cards
   const t = ss.trend || {};
-  document.getElementById('st-trend-status').textContent  = t.active ? '🟢 ACTIVE' : '⚫ OFF';
-  document.getElementById('st-trend-dir').textContent     = t.direction || '—';
-  document.getElementById('st-trend-ema20').textContent   = t.ema20 ? t.ema20.toLocaleString('en-IN') : '—';
-  document.getElementById('st-trend-ema50').textContent   = t.ema50 ? t.ema50.toLocaleString('en-IN') : '—';
-  document.getElementById('st-trend-rsi').textContent     = t.rsi   ? t.rsi.toFixed(1)                : '—';
   const bo = ss.breakout || {};
-  document.getElementById('st-bo-status').textContent = bo.active ? '🟢 ACTIVE' : '⚫ OFF';
-  document.getElementById('st-bo-dir').textContent    = bo.direction || '—';
-  document.getElementById('st-bo-high').textContent   = bo.high15m ? bo.high15m.toLocaleString('en-IN') : '—';
-  document.getElementById('st-bo-low').textContent    = bo.low15m  ? bo.low15m.toLocaleString('en-IN')  : '—';
-  document.getElementById('st-bo-vol').textContent    = bo.volume_spike ? '✅ YES' : '❌ NO';
   const rv = ss.reversal || {};
-  document.getElementById('st-rev-status').textContent = rv.active ? '🟢 ACTIVE' : '⚫ OFF';
-  document.getElementById('st-rev-dir').textContent    = rv.direction || '—';
-  document.getElementById('st-rev-rsi').textContent    = rv.rsi ? rv.rsi.toFixed(1) : '—';
-  document.getElementById('st-rev-sr').textContent     = rv.at_sr ? '✅ YES' : '❌ NO';
+  const now = new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  let activeCount = 0;
+
+  // Trend card
+  document.getElementById('ch-trend-ema20').textContent = t.ema20 ? t.ema20.toLocaleString('en-IN') : '—';
+  document.getElementById('ch-trend-ema50').textContent = t.ema50 ? t.ema50.toLocaleString('en-IN') : '—';
+  document.getElementById('ch-trend-rsi').textContent   = t.rsi   ? t.rsi.toFixed(1) : '—';
+  document.getElementById('ch-trend-dir').textContent   = t.direction || '—';
+  document.getElementById('ct-trend').textContent = 'Last checked: ' + now;
+  const sbTrend = document.getElementById('sb-trend');
+  const scTrend = document.getElementById('sc-trend');
+  if (t.active && t.direction) {
+    activeCount++;
+    const cls = t.direction === 'CE' ? 'active-ce' : 'active-pe';
+    sbTrend.className = 'strat-status-badge ' + cls;
+    sbTrend.innerHTML = '<div class="strat-status-dot"></div>' + (t.direction === 'CE' ? 'BULLISH' : 'BEARISH');
+    scTrend.className = 'strat-card ' + cls;
+  } else {
+    sbTrend.className = 'strat-status-badge inactive';
+    sbTrend.innerHTML = '<div class="strat-status-dot"></div>INACTIVE';
+    scTrend.className = 'strat-card';
+  }
+
+  // Breakout card
+  document.getElementById('ch-bo-high').textContent = bo.high15m ? bo.high15m.toLocaleString('en-IN') : '—';
+  document.getElementById('ch-bo-low').textContent  = bo.low15m  ? bo.low15m.toLocaleString('en-IN')  : '—';
+  document.getElementById('ch-bo-vol').textContent  = bo.volume_spike ? 'YES' : 'NO';
+  document.getElementById('ct-breakout').textContent = 'Last checked: ' + now;
+  const sbBo = document.getElementById('sb-breakout');
+  const scBo = document.getElementById('sc-breakout');
+  if (bo.active && bo.direction) {
+    activeCount++;
+    const cls = bo.direction === 'CE' ? 'active-ce' : 'active-pe';
+    sbBo.className = 'strat-status-badge ' + cls;
+    sbBo.innerHTML = '<div class="strat-status-dot"></div>' + (bo.direction === 'CE' ? 'BULLISH' : 'BEARISH');
+    scBo.className = 'strat-card ' + cls;
+  } else {
+    sbBo.className = 'strat-status-badge inactive';
+    sbBo.innerHTML = '<div class="strat-status-dot"></div>INACTIVE';
+    scBo.className = 'strat-card';
+  }
+
+  // Reversal card
+  document.getElementById('ch-rev-rsi').textContent    = rv.rsi ? rv.rsi.toFixed(1) : '—';
+  document.getElementById('ch-rev-status').textContent = rv.active ? 'ACTIVE' : 'OFF';
+  document.getElementById('ch-rev-sr').textContent     = rv.at_sr ? 'YES' : 'NO';
+  document.getElementById('ct-reversal').textContent = 'Last checked: ' + now;
+  const sbRv = document.getElementById('sb-reversal');
+  const scRv = document.getElementById('sc-reversal');
+  if (rv.active && rv.direction) {
+    activeCount++;
+    const cls = rv.direction === 'CE' ? 'active-ce' : 'active-pe';
+    sbRv.className = 'strat-status-badge ' + cls;
+    sbRv.innerHTML = '<div class="strat-status-dot"></div>' + (rv.direction === 'CE' ? 'BULLISH' : 'BEARISH');
+    scRv.className = 'strat-card ' + cls;
+  } else {
+    sbRv.className = 'strat-status-badge inactive';
+    sbRv.innerHTML = '<div class="strat-status-dot"></div>INACTIVE';
+    scRv.className = 'strat-card';
+  }
+  document.getElementById('stratActiveCount').textContent = activeCount + '/3 Active';
+
+  // Store for sheet
+  window._stratData = { trend: t, breakout: bo, reversal: rv };
 
   // Status settings
   document.getElementById('set-status').textContent  = status.logged_in ? 'Connected ✅' : 'Disconnected ❌';
@@ -663,6 +773,107 @@ function renderHistory(signals) {
         </div>
       </div>`;
   }).join('');
+}
+
+// Bottom sheet
+function openSheet(name) {
+  const data = (window._stratData || {})[name] || {};
+  const overlay = document.getElementById('sheetOverlay');
+  const sheet   = document.getElementById('bottomSheet');
+  const title   = document.getElementById('sheetTitle');
+  const badge   = document.getElementById('sheetBadge');
+  const body    = document.getElementById('sheetBody');
+
+  const configs = {
+    trend: {
+      name: 'Trend + Pullback',
+      chips: [
+        {label:'EMA20', val: data.ema20 ? data.ema20.toLocaleString('en-IN') : '—'},
+        {label:'EMA50', val: data.ema50 ? data.ema50.toLocaleString('en-IN') : '—'},
+        {label:'RSI',   val: data.rsi   ? data.rsi.toFixed(1) : '—'},
+        {label:'Trend', val: data.direction || '—'},
+      ],
+      howItWorks: 'Identifies the primary trend using EMA crossover (EMA20 vs EMA50), then waits for a near-EMA pullback before entering. RSI must be in the 40–65 zone to confirm momentum.',
+      conditions: [
+        'EMA20 > EMA50 for uptrend (CE signal)',
+        'EMA20 < EMA50 for downtrend (PE signal)',
+        'Price pulls back to within 0.3% of EMA20',
+        'RSI between 40–65 (not overbought/oversold)',
+        'Body-close confirmation — no wick fakes',
+      ],
+      whyItWorks: 'Trend-following with pullback entry gives better risk-reward than chasing breakouts. The near-EMA requirement filters out mid-air entries.',
+      warning: null,
+    },
+    breakout: {
+      name: 'Breakout',
+      chips: [
+        {label:'15m High', val: data.high15m ? data.high15m.toLocaleString('en-IN') : '—'},
+        {label:'15m Low',  val: data.low15m  ? data.low15m.toLocaleString('en-IN')  : '—'},
+        {label:'Vol Spike',val: data.volume_spike ? 'YES' : 'NO'},
+      ],
+      howItWorks: 'Monitors the 15-minute candle high/low levels. A body-close breakout above the 15m high with volume confirmation triggers a CE signal. A break below the 15m low triggers PE.',
+      conditions: [
+        'Price body-closes above 15m high → CE breakout',
+        'Price body-closes below 15m low → PE breakdown',
+        'Volume must be 1.5× the 20-period average',
+        'Wick-only breakouts are ignored (body confirmation required)',
+      ],
+      whyItWorks: 'Volume-confirmed breakouts have significantly higher follow-through. Body-close filter eliminates false breakouts caused by stop hunts.',
+      warning: null,
+    },
+    reversal: {
+      name: 'Reversal',
+      chips: [
+        {label:'RSI',    val: data.rsi ? data.rsi.toFixed(1) : '—'},
+        {label:'Status', val: data.active ? 'ACTIVE' : 'OFF'},
+        {label:'At S/R', val: data.at_sr ? 'YES' : 'NO'},
+      ],
+      howItWorks: 'Looks for extreme RSI readings at key Support or Resistance levels. RSI above 75 at resistance = PE signal. RSI below 25 at support = CE signal.',
+      conditions: [
+        'RSI > 75 at resistance zone → PE reversal',
+        'RSI < 25 at support zone → CE reversal',
+        'Price must be at a confirmed S/R level (not mid-air)',
+        'BLOCKED when trend is STRONG (EMA spread > 0.3%)',
+      ],
+      whyItWorks: 'Mean reversion at extremes is statistically reliable when combined with S/R levels. The trend block prevents fighting a strong trend.',
+      warning: 'In strong trends, RSI can stay extreme for a long time. The trend strength guard prevents repeated stop-outs but always confirm with the other strategies.',
+    },
+  };
+
+  const cfg = configs[name];
+  title.textContent = cfg.name;
+
+  if (data.active && data.direction) {
+    const cls = data.direction === 'CE' ? 'active-ce' : 'active-pe';
+    badge.className = 'strat-status-badge ' + cls;
+    badge.innerHTML = '<div class="strat-status-dot"></div>' + (data.direction === 'CE' ? 'BULLISH' : 'BEARISH');
+  } else {
+    badge.className = 'strat-status-badge inactive';
+    badge.innerHTML = '<div class="strat-status-dot"></div>INACTIVE';
+  }
+
+  const chipsHtml = cfg.chips.map(c => `<div class="sheet-chip"><div class="sheet-chip-label">${c.label}</div><div class="sheet-chip-value">${c.val}</div></div>`).join('');
+  const condsHtml = cfg.conditions.map(c => `<div class="sheet-condition"><div class="dot"></div><span>${c}</span></div>`).join('');
+  const warnHtml  = cfg.warning ? `<div class="sheet-warning">⚠️ ${cfg.warning}</div>` : '';
+
+  body.innerHTML = `
+    <div class="sheet-chip-row">${chipsHtml}</div>
+    <div class="sheet-section">How It Works</div>
+    <p style="font-size:13px;line-height:1.6;color:var(--muted);margin-bottom:4px">${cfg.howItWorks}</p>
+    <div class="sheet-section">Entry Conditions</div>
+    ${condsHtml}
+    <div class="sheet-section">Why It Works</div>
+    <p style="font-size:13px;line-height:1.6;color:var(--muted)">${cfg.whyItWorks}</p>
+    ${warnHtml}
+  `;
+
+  overlay.classList.add('open');
+  sheet.classList.add('open');
+}
+
+function closeSheet() {
+  document.getElementById('sheetOverlay').classList.remove('open');
+  document.getElementById('bottomSheet').classList.remove('open');
 }
 
 async function doPing() {
