@@ -407,7 +407,7 @@
         <div class="card-title">Server Connection</div>
         <div class="settings-row">
           <span class="settings-label">Server</span>
-          <span class="settings-value" id="set-server">13.61.74.91:8000</span>
+          <span class="settings-value" id="set-server">goes-floors-flags-connection.trycloudflare.com</span>
         </div>
         <div class="settings-row">
           <span class="settings-label">Status</span>
@@ -496,9 +496,9 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const SERVER_DIRECT = 'http://13.61.74.91:8000';
-const PROXY = 'https://api.allorigins.win/raw?url=';
-function apiUrl(path) { return PROXY + encodeURIComponent(SERVER_DIRECT + path); }
+const SERVER_DIRECT = 'https://goes-floors-flags-connection.trycloudflare.com';
+const PROXY = '';
+function apiUrl(path) { return SERVER_DIRECT + path; }
 let currentInst = 'NIFTY';
 let lastData = null;
 let autoRefreshTimer = null;
