@@ -496,7 +496,9 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const SERVER = 'http://13.61.74.91:8000';
+const SERVER_DIRECT = 'http://13.61.74.91:8000';
+const PROXY = 'https://api.allorigins.win/raw?url=';
+function apiUrl(path) { return PROXY + encodeURIComponent(SERVER_DIRECT + path); }
 let currentInst = 'NIFTY';
 let lastData = null;
 let autoRefreshTimer = null;
@@ -528,9 +530,9 @@ function showToast(msg) {
 async function fetchData() {
   try {
     const [signalRes, statusRes, histRes] = await Promise.all([
-      fetch(SERVER + '/api/signal', {signal: AbortSignal.timeout(8000)}),
-      fetch(SERVER + '/api/status', {signal: AbortSignal.timeout(8000)}),
-      fetch(SERVER + '/api/history', {signal: AbortSignal.timeout(8000)}),
+      fetch(apiUrl('/api/signal'), {signal: AbortSignal.timeout(12000)}),
+      fetch(apiUrl('/api/status'), {signal: AbortSignal.timeout(12000)}),
+      fetch(apiUrl('/api/history'), {signal: AbortSignal.timeout(12000)}),
     ]);
     const signal = await signalRes.json();
     const status = await statusRes.json();
@@ -881,7 +883,7 @@ async function doPing() {
   btn.classList.add('spinning');
   btn.disabled = true;
   try {
-    const res  = await fetch(SERVER + '/api/ping', {signal: AbortSignal.timeout(10000)});
+    const res  = await fetch(apiUrl('/api/ping'), {signal: AbortSignal.timeout(15000)});
     const data = await res.json();
     showToast('⚡ Engine pinged — data refreshed');
     lastData = data;
