@@ -496,9 +496,19 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const SERVER_DIRECT = 'https://goes-floors-flags-connection.trycloudflare.com';
+const GIST_URL = 'https://gist.githubusercontent.com/shivarajc500-ui/183f2a3c3c07d0b0f865dd55093a1505/raw/tunnel-url.txt';
+let SERVER_DIRECT = 'https://scanner-experiment-nice-frequently.trycloudflare.com';
 const PROXY = '';
 function apiUrl(path) { return SERVER_DIRECT + path; }
+async function discoverTunnelUrl() {
+  try {
+    const r = await fetch(GIST_URL + '?t=' + Date.now(), {cache:'no-store', signal:AbortSignal.timeout(5000)});
+    if (r.ok) {
+      const url = (await r.text()).trim();
+      if (url.startsWith('https://')) { SERVER_DIRECT = url; }
+    }
+  } catch(e) {}
+}
 let currentInst = 'NIFTY';
 let lastData = null;
 let autoRefreshTimer = null;
@@ -907,8 +917,8 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/nifty-jarvis/sw.js', {scope: '/nifty-jarvis/'}).catch(() => {});
 }
 
-// Start
-startAutoRefresh();
+// Start — auto-discover tunnel URL then begin refresh
+discoverTunnelUrl().then(() => startAutoRefresh());
 </script>
 </body>
 </html>
