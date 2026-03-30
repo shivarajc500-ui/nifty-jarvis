@@ -538,18 +538,24 @@
 
 <script>
 // ── Config ──────────────────────────────────────────────────────────────────
-const GIST_URL = 'https://gist.githubusercontent.com/shivarajc500-ui/raw/tunnel_url.txt';
-let SERVER_DIRECT = 'https://like-cloud-common-printers.trycloudflare.com';
+// Auto-discovery: tunnel manager on EC2 pushes current URL to this file on every boot
+const TUNNEL_URL_SOURCE = 'https://raw.githubusercontent.com/shivarajc500-ui/nifty-jarvis/main/tunnel_url.txt';
+let SERVER_DIRECT = 'https://historical-best-personalized-thousand.trycloudflare.com';
 function apiUrl(path) { return SERVER_DIRECT + path; }
 
 async function discoverTunnelUrl() {
   try {
-    const r = await fetch(GIST_URL + '?t=' + Date.now(), {cache:'no-store', signal:AbortSignal.timeout(5000)});
+    const r = await fetch(TUNNEL_URL_SOURCE + '?t=' + Date.now(), {cache:'no-store', signal:AbortSignal.timeout(8000)});
     if (r.ok) {
       const url = (await r.text()).trim();
-      if (url.startsWith('https://')) { SERVER_DIRECT = url; }
+      if (url.startsWith('https://')) {
+        SERVER_DIRECT = url;
+        console.log('Tunnel URL loaded:', url);
+      }
     }
-  } catch(e) {}
+  } catch(e) {
+    console.warn('Could not load tunnel URL, using default:', SERVER_DIRECT);
+  }
 }
 
 let currentInst = 'NIFTY';
