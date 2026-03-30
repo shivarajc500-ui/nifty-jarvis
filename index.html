@@ -130,6 +130,15 @@
     .chip-value { font-size: 14px; font-weight: 700; }
     .tap-hint { font-size: 11px; color: var(--muted); text-align: right; margin-top: 4px; }
     .strat-checked-time { font-size: 11px; color: var(--muted); text-align: right; margin-top: 6px; }
+    /* Instrument section header in Strategies tab */
+    .inst-section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px; border-radius: 12px; margin-bottom: 10px;
+      font-size: 14px; font-weight: 800; letter-spacing: 0.5px;
+    }
+    .inst-section-header.nifty { background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.25); color: var(--ce); }
+    .inst-section-header.banknifty { background: rgba(255,77,109,0.08); border: 1px solid rgba(255,77,109,0.2); color: var(--pe); }
+    .inst-section-count { font-size: 11px; font-weight: 600; opacity: 0.8; }
     /* Bottom Sheet */
     .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
     .sheet-overlay.open { opacity: 1; pointer-events: all; }
@@ -274,8 +283,8 @@
       <!-- Active Signal -->
       <div id="signalContainer"></div>
 
-      <!-- Strategy mini -->
-      <div class="card-title">Strategy Status</div>
+      <!-- Strategy mini — shows selected instrument's strategies -->
+      <div class="card-title" id="stratMiniLabel">Strategy Status — NIFTY</div>
       <div class="strat-grid">
         <div class="strat-mini" id="sm-trend">
           <div class="strat-dot" id="sd-trend"></div>
@@ -302,18 +311,24 @@
       </div>
     </div>
 
-    <!-- STRATEGIES -->
+    <!-- STRATEGIES — shows BOTH NIFTY and BANKNIFTY sections -->
     <div id="screen-strategies" class="screen">
       <!-- Header -->
       <div class="strat-monitor-header">
         <div class="strat-monitor-title">Strategy Monitor</div>
-        <div class="strat-active-count" id="stratActiveCount">0/3 Active</div>
+        <div class="strat-active-count" id="stratActiveCount">0/6 Active</div>
       </div>
       <!-- Signal rule -->
-      <div class="signal-rule">🟢 Signal fires only when <strong style="margin:0 4px">2+ strategies agree</strong> OR <strong style="margin:0 4px">1 strong + volume confirmation</strong></div>
+      <div class="signal-rule">🟢 Signal fires only when <strong style="margin:0 4px">2+ strategies agree</strong> per instrument</div>
 
-      <!-- TREND + PULLBACK CARD -->
-      <div class="strat-card" id="sc-trend" onclick="openSheet('trend')">
+      <!-- ── NIFTY SECTION ── -->
+      <div class="inst-section-header nifty">
+        <span>📈 NIFTY</span>
+        <span class="inst-section-count" id="nifty-active-count">0/3 Active</span>
+      </div>
+
+      <!-- NIFTY Trend + Pullback -->
+      <div class="strat-card" id="sc-N-trend" onclick="openSheet('trend','NIFTY')">
         <div class="strat-card-header">
           <div class="strat-card-left">
             <div class="strat-card-icon">〜</div>
@@ -322,20 +337,20 @@
               <div class="strat-card-sub">EMA 20/50 + RSI 40–65</div>
             </div>
           </div>
-          <div class="strat-status-badge inactive" id="sb-trend"><div class="strat-status-dot"></div>INACTIVE</div>
+          <div class="strat-status-badge inactive" id="sb-N-trend"><div class="strat-status-dot"></div>INACTIVE</div>
         </div>
         <div class="chip-row">
-          <div class="chip"><div class="chip-label">EMA20</div><div class="chip-value" id="ch-trend-ema20">—</div></div>
-          <div class="chip"><div class="chip-label">EMA50</div><div class="chip-value" id="ch-trend-ema50">—</div></div>
-          <div class="chip"><div class="chip-label">RSI</div><div class="chip-value" id="ch-trend-rsi">—</div></div>
-          <div class="chip"><div class="chip-label">Trend</div><div class="chip-value" id="ch-trend-dir">—</div></div>
+          <div class="chip"><div class="chip-label">EMA20</div><div class="chip-value" id="ch-N-trend-ema20">—</div></div>
+          <div class="chip"><div class="chip-label">EMA50</div><div class="chip-value" id="ch-N-trend-ema50">—</div></div>
+          <div class="chip"><div class="chip-label">RSI</div><div class="chip-value" id="ch-N-trend-rsi">—</div></div>
+          <div class="chip"><div class="chip-label">Trend</div><div class="chip-value" id="ch-N-trend-dir">—</div></div>
         </div>
         <div class="tap-hint">Tap for details ›</div>
-        <div class="strat-checked-time" id="ct-trend"></div>
+        <div class="strat-checked-time" id="ct-N-trend"></div>
       </div>
 
-      <!-- BREAKOUT CARD -->
-      <div class="strat-card" id="sc-breakout" onclick="openSheet('breakout')">
+      <!-- NIFTY Breakout -->
+      <div class="strat-card" id="sc-N-breakout" onclick="openSheet('breakout','NIFTY')">
         <div class="strat-card-header">
           <div class="strat-card-left">
             <div class="strat-card-icon">⚡</div>
@@ -344,77 +359,148 @@
               <div class="strat-card-sub">15-min High/Low + Volume</div>
             </div>
           </div>
-          <div class="strat-status-badge inactive" id="sb-breakout"><div class="strat-status-dot"></div>INACTIVE</div>
+          <div class="strat-status-badge inactive" id="sb-N-breakout"><div class="strat-status-dot"></div>INACTIVE</div>
         </div>
         <div class="chip-row">
-          <div class="chip"><div class="chip-label">15m High</div><div class="chip-value" id="ch-bo-high">—</div></div>
-          <div class="chip"><div class="chip-label">15m Low</div><div class="chip-value" id="ch-bo-low">—</div></div>
-          <div class="chip"><div class="chip-label">Volume Spike</div><div class="chip-value" id="ch-bo-vol">—</div></div>
+          <div class="chip"><div class="chip-label">15m High</div><div class="chip-value" id="ch-N-bo-high">—</div></div>
+          <div class="chip"><div class="chip-label">15m Low</div><div class="chip-value" id="ch-N-bo-low">—</div></div>
+          <div class="chip"><div class="chip-label">Volume Spike</div><div class="chip-value" id="ch-N-bo-vol">—</div></div>
         </div>
         <div class="tap-hint">Tap for details ›</div>
-        <div class="strat-checked-time" id="ct-breakout"></div>
+        <div class="strat-checked-time" id="ct-N-breakout"></div>
       </div>
 
-      <!-- REVERSAL CARD -->
-      <div class="strat-card" id="sc-reversal" onclick="openSheet('reversal')">
+      <!-- NIFTY Reversal -->
+      <div class="strat-card" id="sc-N-reversal" onclick="openSheet('reversal','NIFTY')">
         <div class="strat-card-header">
           <div class="strat-card-left">
-            <div class="strat-card-icon">〜</div>
+            <div class="strat-card-icon">🔄</div>
             <div>
               <div class="strat-card-name">Reversal</div>
               <div class="strat-card-sub">RSI Extreme + S/R Zone</div>
             </div>
           </div>
-          <div class="strat-status-badge inactive" id="sb-reversal"><div class="strat-status-dot"></div>INACTIVE</div>
+          <div class="strat-status-badge inactive" id="sb-N-reversal"><div class="strat-status-dot"></div>INACTIVE</div>
         </div>
         <div class="chip-row">
-          <div class="chip"><div class="chip-label">RSI</div><div class="chip-value" id="ch-rev-rsi">—</div></div>
-          <div class="chip"><div class="chip-label">Status</div><div class="chip-value" id="ch-rev-status">—</div></div>
-          <div class="chip"><div class="chip-label">At S/R</div><div class="chip-value" id="ch-rev-sr">—</div></div>
+          <div class="chip"><div class="chip-label">RSI</div><div class="chip-value" id="ch-N-rev-rsi">—</div></div>
+          <div class="chip"><div class="chip-label">Status</div><div class="chip-value" id="ch-N-rev-status">—</div></div>
+          <div class="chip"><div class="chip-label">At S/R</div><div class="chip-value" id="ch-N-rev-sr">—</div></div>
         </div>
         <div class="tap-hint">Tap for details ›</div>
-        <div class="strat-checked-time" id="ct-reversal"></div>
+        <div class="strat-checked-time" id="ct-N-reversal"></div>
+      </div>
+
+      <!-- ── BANKNIFTY SECTION ── -->
+      <div class="inst-section-header banknifty" style="margin-top:8px;">
+        <span>📉 BANKNIFTY</span>
+        <span class="inst-section-count" id="bn-active-count">0/3 Active</span>
+      </div>
+
+      <!-- BANKNIFTY Trend + Pullback -->
+      <div class="strat-card" id="sc-B-trend" onclick="openSheet('trend','BANKNIFTY')">
+        <div class="strat-card-header">
+          <div class="strat-card-left">
+            <div class="strat-card-icon">〜</div>
+            <div>
+              <div class="strat-card-name">Trend + Pullback</div>
+              <div class="strat-card-sub">EMA 20/50 + RSI 40–65</div>
+            </div>
+          </div>
+          <div class="strat-status-badge inactive" id="sb-B-trend"><div class="strat-status-dot"></div>INACTIVE</div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="chip-label">EMA20</div><div class="chip-value" id="ch-B-trend-ema20">—</div></div>
+          <div class="chip"><div class="chip-label">EMA50</div><div class="chip-value" id="ch-B-trend-ema50">—</div></div>
+          <div class="chip"><div class="chip-label">RSI</div><div class="chip-value" id="ch-B-trend-rsi">—</div></div>
+          <div class="chip"><div class="chip-label">Trend</div><div class="chip-value" id="ch-B-trend-dir">—</div></div>
+        </div>
+        <div class="tap-hint">Tap for details ›</div>
+        <div class="strat-checked-time" id="ct-B-trend"></div>
+      </div>
+
+      <!-- BANKNIFTY Breakout -->
+      <div class="strat-card" id="sc-B-breakout" onclick="openSheet('breakout','BANKNIFTY')">
+        <div class="strat-card-header">
+          <div class="strat-card-left">
+            <div class="strat-card-icon">⚡</div>
+            <div>
+              <div class="strat-card-name">Breakout</div>
+              <div class="strat-card-sub">15-min High/Low + Volume</div>
+            </div>
+          </div>
+          <div class="strat-status-badge inactive" id="sb-B-breakout"><div class="strat-status-dot"></div>INACTIVE</div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="chip-label">15m High</div><div class="chip-value" id="ch-B-bo-high">—</div></div>
+          <div class="chip"><div class="chip-label">15m Low</div><div class="chip-value" id="ch-B-bo-low">—</div></div>
+          <div class="chip"><div class="chip-label">Volume Spike</div><div class="chip-value" id="ch-B-bo-vol">—</div></div>
+        </div>
+        <div class="tap-hint">Tap for details ›</div>
+        <div class="strat-checked-time" id="ct-B-breakout"></div>
+      </div>
+
+      <!-- BANKNIFTY Reversal -->
+      <div class="strat-card" id="sc-B-reversal" onclick="openSheet('reversal','BANKNIFTY')">
+        <div class="strat-card-header">
+          <div class="strat-card-left">
+            <div class="strat-card-icon">🔄</div>
+            <div>
+              <div class="strat-card-name">Reversal</div>
+              <div class="strat-card-sub">RSI Extreme + S/R Zone</div>
+            </div>
+          </div>
+          <div class="strat-status-badge inactive" id="sb-B-reversal"><div class="strat-status-dot"></div>INACTIVE</div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="chip-label">RSI</div><div class="chip-value" id="ch-B-rev-rsi">—</div></div>
+          <div class="chip"><div class="chip-label">Status</div><div class="chip-value" id="ch-B-rev-status">—</div></div>
+          <div class="chip"><div class="chip-label">At S/R</div><div class="chip-value" id="ch-B-rev-sr">—</div></div>
+        </div>
+        <div class="tap-hint">Tap for details ›</div>
+        <div class="strat-checked-time" id="ct-B-reversal"></div>
       </div>
     </div>
 
     <!-- BOTTOM SHEET OVERLAY -->
     <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
-
-    <!-- BOTTOM SHEET -->
     <div class="bottom-sheet" id="bottomSheet">
       <div class="sheet-handle"></div>
       <div class="sheet-header">
-        <div class="sheet-title" id="sheetTitle">Strategy</div>
-        <div class="strat-status-badge inactive" id="sheetBadge"><div class="strat-status-dot"></div>INACTIVE</div>
+        <div>
+          <div class="sheet-title" id="sheetTitle">Strategy</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;" id="sheetInst"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="strat-status-badge inactive" id="sheetBadge"><div class="strat-status-dot"></div>INACTIVE</div>
+          <button class="sheet-close" onclick="closeSheet()">✕</button>
+        </div>
       </div>
       <div class="sheet-body" id="sheetBody"></div>
     </div>
 
     <!-- HISTORY -->
     <div id="screen-history" class="screen">
+      <div class="strat-monitor-header" style="margin-bottom:14px;">
+        <div class="strat-monitor-title">Signal History</div>
+      </div>
       <div id="historyContainer">
-        <div class="empty">
-          <div class="empty-icon">📋</div>
-          <div style="font-size:15px;font-weight:600;margin-bottom:6px;">No Signal History</div>
-          <div style="font-size:12px;">Signals will appear here once generated</div>
-        </div>
+        <div class="empty"><div class="empty-icon">📋</div><div style="font-size:15px;font-weight:600;margin-bottom:6px;">No Signal History</div><div style="font-size:12px;">Signals will appear here once generated</div></div>
       </div>
     </div>
 
     <!-- SETTINGS -->
     <div id="screen-settings" class="screen">
+      <div class="strat-monitor-header" style="margin-bottom:14px;">
+        <div class="strat-monitor-title">Settings</div>
+      </div>
       <div class="card">
-        <div class="card-title">Server Connection</div>
         <div class="settings-row">
-          <span class="settings-label">Server</span>
-          <span class="settings-value" id="set-server">goes-floors-flags-connection.trycloudflare.com</span>
-        </div>
-        <div class="settings-row">
-          <span class="settings-label">Status</span>
+          <span class="settings-label">Server Status</span>
           <span class="settings-value" id="set-status">—</span>
         </div>
         <div class="settings-row">
-          <span class="settings-label">Version</span>
+          <span class="settings-label">Engine Version</span>
           <span class="settings-value" id="set-version">—</span>
         </div>
         <div class="settings-row">
@@ -425,81 +511,37 @@
           <span class="settings-label">Last Update</span>
           <span class="settings-value" id="set-update">—</span>
         </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Engine Config</div>
-        <div class="settings-row">
-          <span class="settings-label">Mode</span>
-          <span class="settings-value ok">LIVE</span>
-        </div>
         <div class="settings-row">
           <span class="settings-label">Instruments</span>
           <span class="settings-value">NIFTY + BANKNIFTY</span>
         </div>
         <div class="settings-row">
+          <span class="settings-label">Max Signals/Day</span>
+          <span class="settings-value">3 per instrument</span>
+        </div>
+        <div class="settings-row">
           <span class="settings-label">Trading Window</span>
           <span class="settings-value">9:20 AM – 3:10 PM</span>
         </div>
-        <div class="settings-row">
-          <span class="settings-label">Max Signals/Day</span>
-          <span class="settings-value">3</span>
-        </div>
-        <div class="settings-row">
-          <span class="settings-label">Cooldown</span>
-          <span class="settings-value">10 minutes</span>
-        </div>
-        <div class="settings-row">
-          <span class="settings-label">Stop Loss</span>
-          <span class="settings-value">0.6%</span>
-        </div>
-        <div class="settings-row">
-          <span class="settings-label">Target</span>
-          <span class="settings-value">1.2% (1:2 R:R)</span>
-        </div>
-        <div class="settings-row">
-          <span class="settings-label">ATM Strike</span>
-          <span class="settings-value ok">Auto-calculated</span>
-        </div>
-        <div class="settings-row">
-          <span class="settings-label">Same-Dir Block</span>
-          <span class="settings-value ok">Active</span>
-        </div>
       </div>
-
-      <div class="card">
-        <div class="card-title">New Features — v6.0</div>
-        <div class="settings-row">
-          <span class="settings-label">ATM Strike Selection</span>
-          <span class="settings-value ok">✅ Active</span>
-        </div>
-        <div class="settings-row">
-          <span class="settings-label">10-Min Cooldown</span>
-          <span class="settings-value ok">✅ Active</span>
-        </div>
-        <div class="settings-row">
-          <span class="settings-label">Same-Direction Block</span>
-          <span class="settings-value ok">✅ Active</span>
-        </div>
-      </div>
-
       <div class="version-tag">NIFTY JARVIS v6.0 — DISCIPLINE AUTOMATED</div>
     </div>
 
   </div><!-- /content -->
 </div><!-- /app -->
 
-<!-- Ping button -->
-<button class="ping-btn" id="pingBtn" onclick="doPing()" title="Manual Refresh">⚡</button>
+<!-- Ping FAB -->
+<button class="ping-btn" id="pingBtn" onclick="doPing()" title="Ping engine">⚡</button>
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
-const GIST_URL = 'https://gist.githubusercontent.com/shivarajc500-ui/183f2a3c3c07d0b0f865dd55093a1505/raw/tunnel-url.txt';
-let SERVER_DIRECT = 'https://scanner-experiment-nice-frequently.trycloudflare.com';
-const PROXY = '';
+// ── Config ──────────────────────────────────────────────────────────────────
+const GIST_URL = 'https://gist.githubusercontent.com/shivarajc500-ui/raw/tunnel_url.txt';
+let SERVER_DIRECT = 'http://13.61.74.91:8000';
 function apiUrl(path) { return SERVER_DIRECT + path; }
+
 async function discoverTunnelUrl() {
   try {
     const r = await fetch(GIST_URL + '?t=' + Date.now(), {cache:'no-store', signal:AbortSignal.timeout(5000)});
@@ -509,11 +551,12 @@ async function discoverTunnelUrl() {
     }
   } catch(e) {}
 }
+
 let currentInst = 'NIFTY';
 let lastData = null;
 let autoRefreshTimer = null;
 
-// Tab switching
+// ── Tab switching ────────────────────────────────────────────────────────────
 function switchTab(name) {
   document.querySelectorAll('.tab').forEach((t,i) => {
     const names = ['dashboard','strategies','history','settings'];
@@ -527,7 +570,11 @@ function selectInst(inst) {
   currentInst = inst;
   document.getElementById('btn-NIFTY').classList.toggle('active', inst === 'NIFTY');
   document.getElementById('btn-BANKNIFTY').classList.toggle('active', inst === 'BANKNIFTY');
-  if (lastData) renderSignal(lastData);
+  document.getElementById('stratMiniLabel').textContent = 'Strategy Status — ' + inst;
+  if (lastData) {
+    renderSignal(lastData);
+    renderStratMini(lastData.strategy_status || {});
+  }
 }
 
 function showToast(msg) {
@@ -537,6 +584,7 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
+// ── Fetch ────────────────────────────────────────────────────────────────────
 async function fetchData() {
   try {
     const [signalRes, statusRes, histRes] = await Promise.all([
@@ -558,8 +606,6 @@ async function fetchData() {
 
 function setBanner(ok) {
   const b = document.getElementById('serverBanner');
-  const mb = document.getElementById('marketBadge');
-  const mt = document.getElementById('marketText');
   if (ok) {
     b.className = 'server-banner ok';
     b.textContent = '✅ Connected — AWS EC2 Server Live';
@@ -569,6 +615,7 @@ function setBanner(ok) {
   }
 }
 
+// ── Main UI update ───────────────────────────────────────────────────────────
 function updateUI(signal, status, hist) {
   // Market badge
   const mb = document.getElementById('marketBadge');
@@ -603,97 +650,20 @@ function updateUI(signal, status, hist) {
     document.getElementById('td' + i).className = 'trade-dot' + (i <= trades ? ' used' : '');
   }
 
-  // Signal
+  // Signal card
   renderSignal(signal);
 
-  // Strategy mini
+  // strategy_status is now { NIFTY: {trend,breakout,reversal}, BANKNIFTY: {trend,breakout,reversal} }
   const ss = signal.strategy_status || {};
-  ['trend','breakout','reversal'].forEach(s => {
-    const data = ss[s] || {};
-    const dot  = document.getElementById('sd-' + s);
-    const val  = document.getElementById('sv-' + s);
-    const card = document.getElementById('sm-' + s);
-    if (data.active && data.direction) {
-      dot.className  = 'strat-dot ' + data.direction.toLowerCase();
-      val.className  = 'strat-dir ' + data.direction.toLowerCase();
-      val.textContent = data.direction;
-      card.className = 'strat-mini active-' + data.direction.toLowerCase();
-    } else {
-      dot.className  = 'strat-dot';
-      val.className  = 'strat-dir off';
-      val.textContent = 'OFF';
-      card.className = 'strat-mini';
-    }
-  });
 
-  // Strategy Monitor Cards
-  const t = ss.trend || {};
-  const bo = ss.breakout || {};
-  const rv = ss.reversal || {};
-  const now = new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  let activeCount = 0;
+  // Strategy mini on dashboard (for selected instrument)
+  renderStratMini(ss);
 
-  // Trend card
-  document.getElementById('ch-trend-ema20').textContent = t.ema20 ? t.ema20.toLocaleString('en-IN') : '—';
-  document.getElementById('ch-trend-ema50').textContent = t.ema50 ? t.ema50.toLocaleString('en-IN') : '—';
-  document.getElementById('ch-trend-rsi').textContent   = t.rsi   ? t.rsi.toFixed(1) : '—';
-  document.getElementById('ch-trend-dir').textContent   = t.direction || '—';
-  document.getElementById('ct-trend').textContent = 'Last checked: ' + now;
-  const sbTrend = document.getElementById('sb-trend');
-  const scTrend = document.getElementById('sc-trend');
-  if (t.active && t.direction) {
-    activeCount++;
-    const cls = t.direction === 'CE' ? 'active-ce' : 'active-pe';
-    sbTrend.className = 'strat-status-badge ' + cls;
-    sbTrend.innerHTML = '<div class="strat-status-dot"></div>' + (t.direction === 'CE' ? 'BULLISH' : 'BEARISH');
-    scTrend.className = 'strat-card ' + cls;
-  } else {
-    sbTrend.className = 'strat-status-badge inactive';
-    sbTrend.innerHTML = '<div class="strat-status-dot"></div>INACTIVE';
-    scTrend.className = 'strat-card';
-  }
-
-  // Breakout card
-  document.getElementById('ch-bo-high').textContent = bo.high15m ? bo.high15m.toLocaleString('en-IN') : '—';
-  document.getElementById('ch-bo-low').textContent  = bo.low15m  ? bo.low15m.toLocaleString('en-IN')  : '—';
-  document.getElementById('ch-bo-vol').textContent  = bo.volume_spike ? 'YES' : 'NO';
-  document.getElementById('ct-breakout').textContent = 'Last checked: ' + now;
-  const sbBo = document.getElementById('sb-breakout');
-  const scBo = document.getElementById('sc-breakout');
-  if (bo.active && bo.direction) {
-    activeCount++;
-    const cls = bo.direction === 'CE' ? 'active-ce' : 'active-pe';
-    sbBo.className = 'strat-status-badge ' + cls;
-    sbBo.innerHTML = '<div class="strat-status-dot"></div>' + (bo.direction === 'CE' ? 'BULLISH' : 'BEARISH');
-    scBo.className = 'strat-card ' + cls;
-  } else {
-    sbBo.className = 'strat-status-badge inactive';
-    sbBo.innerHTML = '<div class="strat-status-dot"></div>INACTIVE';
-    scBo.className = 'strat-card';
-  }
-
-  // Reversal card
-  document.getElementById('ch-rev-rsi').textContent    = rv.rsi ? rv.rsi.toFixed(1) : '—';
-  document.getElementById('ch-rev-status').textContent = rv.active ? 'ACTIVE' : 'OFF';
-  document.getElementById('ch-rev-sr').textContent     = rv.at_sr ? 'YES' : 'NO';
-  document.getElementById('ct-reversal').textContent = 'Last checked: ' + now;
-  const sbRv = document.getElementById('sb-reversal');
-  const scRv = document.getElementById('sc-reversal');
-  if (rv.active && rv.direction) {
-    activeCount++;
-    const cls = rv.direction === 'CE' ? 'active-ce' : 'active-pe';
-    sbRv.className = 'strat-status-badge ' + cls;
-    sbRv.innerHTML = '<div class="strat-status-dot"></div>' + (rv.direction === 'CE' ? 'BULLISH' : 'BEARISH');
-    scRv.className = 'strat-card ' + cls;
-  } else {
-    sbRv.className = 'strat-status-badge inactive';
-    sbRv.innerHTML = '<div class="strat-status-dot"></div>INACTIVE';
-    scRv.className = 'strat-card';
-  }
-  document.getElementById('stratActiveCount').textContent = activeCount + '/3 Active';
+  // Full strategy monitor (both instruments)
+  renderStratMonitor(ss);
 
   // Store for sheet
-  window._stratData = { trend: t, breakout: bo, reversal: rv };
+  window._stratData = ss;
 
   // Status settings
   document.getElementById('set-status').textContent  = status.logged_in ? 'Connected ✅' : 'Disconnected ❌';
@@ -712,6 +682,113 @@ function updateUI(signal, status, hist) {
   renderHistory(hist.signals || []);
 }
 
+// ── Strategy mini (dashboard) — shows selected instrument ────────────────────
+function renderStratMini(ss) {
+  const instData = ss[currentInst] || {};
+  ['trend','breakout','reversal'].forEach(s => {
+    const data = instData[s] || {};
+    const dot  = document.getElementById('sd-' + s);
+    const val  = document.getElementById('sv-' + s);
+    const card = document.getElementById('sm-' + s);
+    if (data.active && data.direction) {
+      dot.className  = 'strat-dot ' + data.direction.toLowerCase();
+      val.className  = 'strat-dir ' + data.direction.toLowerCase();
+      val.textContent = data.direction;
+      card.className = 'strat-mini active-' + data.direction.toLowerCase();
+    } else {
+      dot.className  = 'strat-dot';
+      val.className  = 'strat-dir off';
+      val.textContent = 'OFF';
+      card.className = 'strat-mini';
+    }
+  });
+}
+
+// ── Full strategy monitor (both instruments) ─────────────────────────────────
+function renderStratMonitor(ss) {
+  const now = new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  let totalActive = 0;
+
+  // Helper to update one instrument's cards
+  function updateInstCards(prefix, instKey) {
+    const instData = ss[instKey] || {};
+    const t  = instData.trend    || {};
+    const bo = instData.breakout || {};
+    const rv = instData.reversal || {};
+    let instActive = 0;
+
+    // Trend card
+    const el = (id) => document.getElementById(id);
+    el('ch-'+prefix+'-trend-ema20').textContent = t.ema20 ? t.ema20.toLocaleString('en-IN') : '—';
+    el('ch-'+prefix+'-trend-ema50').textContent = t.ema50 ? t.ema50.toLocaleString('en-IN') : '—';
+    el('ch-'+prefix+'-trend-rsi').textContent   = t.rsi   ? t.rsi.toFixed(1) : '—';
+    el('ch-'+prefix+'-trend-dir').textContent   = t.direction || '—';
+    el('ct-'+prefix+'-trend').textContent = 'Last checked: ' + now;
+    const sbT = el('sb-'+prefix+'-trend');
+    const scT = el('sc-'+prefix+'-trend');
+    if (t.active && t.direction) {
+      instActive++;
+      const cls = t.direction === 'CE' ? 'active-ce' : 'active-pe';
+      sbT.className = 'strat-status-badge ' + cls;
+      sbT.innerHTML = '<div class="strat-status-dot"></div>' + (t.direction === 'CE' ? 'BULLISH' : 'BEARISH');
+      scT.className = 'strat-card ' + cls;
+    } else {
+      sbT.className = 'strat-status-badge inactive';
+      sbT.innerHTML = '<div class="strat-status-dot"></div>INACTIVE';
+      scT.className = 'strat-card';
+    }
+
+    // Breakout card
+    el('ch-'+prefix+'-bo-high').textContent = bo.high15m ? bo.high15m.toLocaleString('en-IN') : '—';
+    el('ch-'+prefix+'-bo-low').textContent  = bo.low15m  ? bo.low15m.toLocaleString('en-IN')  : '—';
+    el('ch-'+prefix+'-bo-vol').textContent  = bo.volume_spike ? 'YES' : 'NO';
+    el('ct-'+prefix+'-breakout').textContent = 'Last checked: ' + now;
+    const sbBo = el('sb-'+prefix+'-breakout');
+    const scBo = el('sc-'+prefix+'-breakout');
+    if (bo.active && bo.direction) {
+      instActive++;
+      const cls = bo.direction === 'CE' ? 'active-ce' : 'active-pe';
+      sbBo.className = 'strat-status-badge ' + cls;
+      sbBo.innerHTML = '<div class="strat-status-dot"></div>' + (bo.direction === 'CE' ? 'BULLISH' : 'BEARISH');
+      scBo.className = 'strat-card ' + cls;
+    } else {
+      sbBo.className = 'strat-status-badge inactive';
+      sbBo.innerHTML = '<div class="strat-status-dot"></div>INACTIVE';
+      scBo.className = 'strat-card';
+    }
+
+    // Reversal card
+    el('ch-'+prefix+'-rev-rsi').textContent    = rv.rsi ? rv.rsi.toFixed(1) : '—';
+    el('ch-'+prefix+'-rev-status').textContent = rv.active ? 'ACTIVE' : 'OFF';
+    el('ch-'+prefix+'-rev-sr').textContent     = rv.at_sr ? 'YES' : 'NO';
+    el('ct-'+prefix+'-reversal').textContent = 'Last checked: ' + now;
+    const sbRv = el('sb-'+prefix+'-reversal');
+    const scRv = el('sc-'+prefix+'-reversal');
+    if (rv.active && rv.direction) {
+      instActive++;
+      const cls = rv.direction === 'CE' ? 'active-ce' : 'active-pe';
+      sbRv.className = 'strat-status-badge ' + cls;
+      sbRv.innerHTML = '<div class="strat-status-dot"></div>' + (rv.direction === 'CE' ? 'BULLISH' : 'BEARISH');
+      scRv.className = 'strat-card ' + cls;
+    } else {
+      sbRv.className = 'strat-status-badge inactive';
+      sbRv.innerHTML = '<div class="strat-status-dot"></div>INACTIVE';
+      scRv.className = 'strat-card';
+    }
+
+    return instActive;
+  }
+
+  const nActive = updateInstCards('N', 'NIFTY');
+  const bActive = updateInstCards('B', 'BANKNIFTY');
+  totalActive = nActive + bActive;
+
+  document.getElementById('nifty-active-count').textContent = nActive + '/3 Active';
+  document.getElementById('bn-active-count').textContent    = bActive + '/3 Active';
+  document.getElementById('stratActiveCount').textContent   = totalActive + '/6 Active';
+}
+
+// ── Signal card ──────────────────────────────────────────────────────────────
 function renderSignal(data) {
   const container = document.getElementById('signalContainer');
   const sig = data.signal;
@@ -761,6 +838,7 @@ function renderSignal(data) {
     </div>`;
 }
 
+// ── History ──────────────────────────────────────────────────────────────────
 function renderHistory(signals) {
   const c = document.getElementById('historyContainer');
   if (!signals.length) {
@@ -787,14 +865,21 @@ function renderHistory(signals) {
   }).join('');
 }
 
-// Bottom sheet
-function openSheet(name) {
-  const data = (window._stratData || {})[name] || {};
+// ── Bottom sheet ─────────────────────────────────────────────────────────────
+function openSheet(name, inst) {
+  // inst can be 'NIFTY' or 'BANKNIFTY'
+  const ss = window._stratData || {};
+  const instData = ss[inst] || ss || {};  // fallback for old flat structure
+  const data = instData[name] || {};
+
   const overlay = document.getElementById('sheetOverlay');
   const sheet   = document.getElementById('bottomSheet');
   const title   = document.getElementById('sheetTitle');
   const badge   = document.getElementById('sheetBadge');
   const body    = document.getElementById('sheetBody');
+  const instEl  = document.getElementById('sheetInst');
+
+  instEl.textContent = inst || '';
 
   const configs = {
     trend: {
@@ -888,6 +973,7 @@ function closeSheet() {
   document.getElementById('bottomSheet').classList.remove('open');
 }
 
+// ── Ping ─────────────────────────────────────────────────────────────────────
 async function doPing() {
   const btn = document.getElementById('pingBtn');
   btn.classList.add('spinning');
@@ -906,7 +992,7 @@ async function doPing() {
   }
 }
 
-// Auto refresh every 60 seconds
+// ── Auto refresh every 60 seconds ────────────────────────────────────────────
 function startAutoRefresh() {
   fetchData();
   autoRefreshTimer = setInterval(fetchData, 60000);
