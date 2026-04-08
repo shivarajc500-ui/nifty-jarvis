@@ -803,7 +803,7 @@ function renderSignal(data) {
       <div class="signal-card none">
         <div class="no-signal-icon">⏳</div>
         <div class="no-signal-text">No Active Signal</div>
-        <div class="no-signal-sub">Watching ${currentInst} — Min 2 strategies must agree</div>
+        <div class="no-signal-sub">Watching ${currentInst} — Any strategy can trigger a signal</div>
       </div>`;
     return;
   }
@@ -888,58 +888,56 @@ function openSheet(name, inst) {
   instEl.textContent = inst || '';
 
   const configs = {
-    trend: {
-      name: 'Trend + Pullback',
+    orb: {
+      name: 'Opening Range Breakout',
       chips: [
-        {label:'EMA20', val: data.ema20 ? data.ema20.toLocaleString('en-IN') : '—'},
-        {label:'EMA50', val: data.ema50 ? data.ema50.toLocaleString('en-IN') : '—'},
-        {label:'RSI',   val: data.rsi   ? data.rsi.toFixed(1) : '—'},
-        {label:'Trend', val: data.direction || '—'},
+        {label:'ORB High', val: data.orb_high ? data.orb_high.toLocaleString('en-IN') : '—'},
+        {label:'ORB Low',  val: data.orb_low  ? data.orb_low.toLocaleString('en-IN')  : '—'},
+        {label:'Ready',    val: data.orb_ready ? 'YES' : 'NO'},
       ],
-      howItWorks: 'Identifies the primary trend using EMA crossover (EMA20 vs EMA50), then waits for a near-EMA pullback before entering. RSI must be in the 40–65 zone to confirm momentum.',
+      howItWorks: 'Calculates the Opening Range from 9:15–9:30 AM candles. A price close above the ORB high with volume ≥1.2× average triggers CE. A close below ORB low triggers PE. Signal window: 9:30–10:15 AM.',
       conditions: [
-        'EMA20 > EMA50 for uptrend (CE signal)',
-        'EMA20 < EMA50 for downtrend (PE signal)',
-        'Price pulls back to within 0.3% of EMA20',
-        'RSI between 40–65 (not overbought/oversold)',
-        'Body-close confirmation — no wick fakes',
+        'ORB range built from 9:15–9:30 AM candles',
+        'Price closes above ORB High → CE signal (9:30–10:15)',
+        'Price closes below ORB Low → PE signal (9:30–10:15)',
+        'Volume must be ≥1.2× the 10-period average',
       ],
-      whyItWorks: 'Trend-following with pullback entry gives better risk-reward than chasing breakouts. The near-EMA requirement filters out mid-air entries.',
+      whyItWorks: 'The opening range captures institutional order flow from the first 15 minutes. Breakouts from this range with volume have the highest follow-through probability of the day.',
       warning: null,
     },
-    breakout: {
-      name: 'Breakout',
+    trend: {
+      name: 'VWAP Trend',
       chips: [
-        {label:'15m High', val: data.high15m ? data.high15m.toLocaleString('en-IN') : '—'},
-        {label:'15m Low',  val: data.low15m  ? data.low15m.toLocaleString('en-IN')  : '—'},
-        {label:'Vol Spike',val: data.volume_spike ? 'YES' : 'NO'},
+        {label:'EMA9',  val: data.ema9  ? data.ema9.toLocaleString('en-IN')  : '—'},
+        {label:'EMA21', val: data.ema21 ? data.ema21.toLocaleString('en-IN') : '—'},
+        {label:'VWAP',  val: data.vwap  ? data.vwap.toLocaleString('en-IN')  : '—'},
+        {label:'RSI',   val: data.rsi   ? data.rsi.toFixed(1) : '—'},
+        {label:'Mode',  val: data.market_type || '—'},
       ],
-      howItWorks: 'Monitors the 15-minute candle high/low levels. A body-close breakout above the 15m high with volume confirmation triggers a CE signal. A break below the 15m low triggers PE.',
+      howItWorks: 'In TREND mode (price >0.3% from VWAP), signals when EMA9 crosses EMA21 in the direction of VWAP. CE: price above VWAP, EMA9>EMA21, green candle, RSI 50–72. PE: price below VWAP, EMA9<EMA21, red candle, RSI 28–50.',
       conditions: [
-        'Price body-closes above 15m high → CE breakout',
-        'Price body-closes below 15m low → PE breakdown',
-        'Volume must be 1.5× the 20-period average',
-        'Wick-only breakouts are ignored (body confirmation required)',
+        'Market must be in TREND mode (price >0.3% from VWAP)',
+        'CE: Price > VWAP AND EMA9 > EMA21 AND green candle AND RSI 50–72',
+        'PE: Price < VWAP AND EMA9 < EMA21 AND red candle AND RSI 28–50',
       ],
-      whyItWorks: 'Volume-confirmed breakouts have significantly higher follow-through. Body-close filter eliminates false breakouts caused by stop hunts.',
+      whyItWorks: 'VWAP is the institutional benchmark. Trading in the direction of VWAP with EMA momentum confirmation gives high-probability trend entries.',
       warning: null,
     },
     reversal: {
-      name: 'Reversal',
+      name: 'VWAP Reversal',
       chips: [
-        {label:'RSI',    val: data.rsi ? data.rsi.toFixed(1) : '—'},
-        {label:'Status', val: data.active ? 'ACTIVE' : 'OFF'},
-        {label:'At S/R', val: data.at_sr ? 'YES' : 'NO'},
+        {label:'RSI',        val: data.rsi        ? data.rsi.toFixed(1) : '—'},
+        {label:'VWAP',       val: data.vwap       ? data.vwap.toLocaleString('en-IN') : '—'},
+        {label:'VWAP Cross', val: data.vwap_cross ? 'YES' : 'NO'},
       ],
-      howItWorks: 'Looks for extreme RSI readings at key Support or Resistance levels. RSI above 75 at resistance = PE signal. RSI below 25 at support = CE signal.',
+      howItWorks: 'In SIDEWAYS mode (price near VWAP), signals when price crosses the VWAP with RSI confirmation. CE: previous candle below VWAP, current candle above VWAP, RSI < 65. PE: previous above, current below, RSI > 35.',
       conditions: [
-        'RSI > 75 at resistance zone → PE reversal',
-        'RSI < 25 at support zone → CE reversal',
-        'Price must be at a confirmed S/R level (not mid-air)',
-        'BLOCKED when trend is STRONG (EMA spread > 0.3%)',
+        'Market must be in SIDEWAYS mode (price within 0.3% of VWAP)',
+        'CE: Previous candle below VWAP → current candle above VWAP, RSI < 65',
+        'PE: Previous candle above VWAP → current candle below VWAP, RSI > 35',
       ],
-      whyItWorks: 'Mean reversion at extremes is statistically reliable when combined with S/R levels. The trend block prevents fighting a strong trend.',
-      warning: 'In strong trends, RSI can stay extreme for a long time. The trend strength guard prevents repeated stop-outs but always confirm with the other strategies.',
+      whyItWorks: 'In sideways markets, VWAP acts as a magnet. Price oscillates around it — catching the cross with RSI confirmation gives reliable mean-reversion entries.',
+      warning: 'Only fires in SIDEWAYS markets. In strong trends, use the VWAP Trend strategy instead.',
     },
   };
 
