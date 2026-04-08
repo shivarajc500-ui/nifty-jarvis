@@ -291,10 +291,10 @@
           <div class="strat-name">TREND</div>
           <div class="strat-dir off" id="sv-trend">OFF</div>
         </div>
-        <div class="strat-mini" id="sm-breakout">
-          <div class="strat-dot" id="sd-breakout"></div>
-          <div class="strat-name">BREAKOUT</div>
-          <div class="strat-dir off" id="sv-breakout">OFF</div>
+        <div class="strat-mini" id="sm-orb">
+          <div class="strat-dot" id="sd-orb"></div>
+          <div class="strat-name">ORB</div>
+          <div class="strat-dir off" id="sv-orb">OFF</div>
         </div>
         <div class="strat-mini" id="sm-reversal">
           <div class="strat-dot" id="sd-reversal"></div>
@@ -306,7 +306,7 @@
       <div class="card" style="padding:10px 14px;">
         <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);">
           <span>🕐</span>
-          <span>Trading Window: 9:20 AM – 3:10 PM IST &nbsp;•&nbsp; Max 3 signals/day</span>
+          <span>Trading Window: 9:15 AM – 3:10 PM IST &nbsp;•&nbsp; Max 5 signals/day</span>
         </div>
       </div>
     </div>
@@ -654,7 +654,7 @@ function updateUI(signal, status, hist) {
 
   // Trades today
   const trades = status.trades_today || 0;
-  document.getElementById('tradesCount').textContent = trades + ' / 3';
+  document.getElementById('tradesCount').textContent = trades + ' / 5';
   for (let i = 1; i <= 3; i++) {
     document.getElementById('td' + i).className = 'trade-dot' + (i <= trades ? ' used' : '');
   }
@@ -694,7 +694,7 @@ function updateUI(signal, status, hist) {
 // ── Strategy mini (dashboard) — shows selected instrument ────────────────────
 function renderStratMini(ss) {
   const instData = ss[currentInst] || {};
-  ['trend','breakout','reversal'].forEach(s => {
+  ['orb','trend','reversal'].forEach(s => {
     const data = instData[s] || {};
     const dot  = document.getElementById('sd-' + s);
     const val  = document.getElementById('sv-' + s);
@@ -721,17 +721,37 @@ function renderStratMonitor(ss) {
   // Helper to update one instrument's cards
   function updateInstCards(prefix, instKey) {
     const instData = ss[instKey] || {};
-    const t  = instData.trend    || {};
-    const bo = instData.breakout || {};
-    const rv = instData.reversal || {};
+    const orb = instData.orb     || {};
+    const t   = instData.trend   || {};
+    const rv  = instData.reversal|| {};
     let instActive = 0;
-
-    // Trend card
     const el = (id) => document.getElementById(id);
-    el('ch-'+prefix+'-trend-ema20').textContent = t.ema20 ? t.ema20.toLocaleString('en-IN') : '—';
-    el('ch-'+prefix+'-trend-ema50').textContent = t.ema50 ? t.ema50.toLocaleString('en-IN') : '—';
+
+    // ORB card
+    el('ch-'+prefix+'-orb-high').textContent  = orb.orb_high  ? orb.orb_high.toLocaleString('en-IN')  : '—';
+    el('ch-'+prefix+'-orb-low').textContent   = orb.orb_low   ? orb.orb_low.toLocaleString('en-IN')   : '—';
+    el('ch-'+prefix+'-orb-ready').textContent = orb.orb_ready ? 'YES' : 'NO';
+    el('ct-'+prefix+'-orb').textContent = 'Last checked: ' + now;
+    const sbOrb = el('sb-'+prefix+'-orb');
+    const scOrb = el('sc-'+prefix+'-orb');
+    if (orb.active && orb.direction) {
+      instActive++;
+      const cls = orb.direction === 'CE' ? 'active-ce' : 'active-pe';
+      sbOrb.className = 'strat-status-badge ' + cls;
+      sbOrb.innerHTML = '<div class="strat-status-dot"></div>' + (orb.direction === 'CE' ? 'BULLISH' : 'BEARISH');
+      scOrb.className = 'strat-card ' + cls;
+    } else {
+      sbOrb.className = 'strat-status-badge inactive';
+      sbOrb.innerHTML = '<div class="strat-status-dot"></div>INACTIVE';
+      scOrb.className = 'strat-card';
+    }
+
+    // VWAP Trend card
+    el('ch-'+prefix+'-trend-ema9').textContent  = t.ema9  ? t.ema9.toLocaleString('en-IN')  : '—';
+    el('ch-'+prefix+'-trend-ema21').textContent = t.ema21 ? t.ema21.toLocaleString('en-IN') : '—';
+    el('ch-'+prefix+'-trend-vwap').textContent  = t.vwap  ? t.vwap.toLocaleString('en-IN')  : '—';
     el('ch-'+prefix+'-trend-rsi').textContent   = t.rsi   ? t.rsi.toFixed(1) : '—';
-    el('ch-'+prefix+'-trend-dir').textContent   = t.direction || '—';
+    el('ch-'+prefix+'-trend-mode').textContent  = t.market_type || '—';
     el('ct-'+prefix+'-trend').textContent = 'Last checked: ' + now;
     const sbT = el('sb-'+prefix+'-trend');
     const scT = el('sc-'+prefix+'-trend');
@@ -747,29 +767,10 @@ function renderStratMonitor(ss) {
       scT.className = 'strat-card';
     }
 
-    // Breakout card
-    el('ch-'+prefix+'-bo-high').textContent = bo.high15m ? bo.high15m.toLocaleString('en-IN') : '—';
-    el('ch-'+prefix+'-bo-low').textContent  = bo.low15m  ? bo.low15m.toLocaleString('en-IN')  : '—';
-    el('ch-'+prefix+'-bo-vol').textContent  = bo.volume_spike ? 'YES' : 'NO';
-    el('ct-'+prefix+'-breakout').textContent = 'Last checked: ' + now;
-    const sbBo = el('sb-'+prefix+'-breakout');
-    const scBo = el('sc-'+prefix+'-breakout');
-    if (bo.active && bo.direction) {
-      instActive++;
-      const cls = bo.direction === 'CE' ? 'active-ce' : 'active-pe';
-      sbBo.className = 'strat-status-badge ' + cls;
-      sbBo.innerHTML = '<div class="strat-status-dot"></div>' + (bo.direction === 'CE' ? 'BULLISH' : 'BEARISH');
-      scBo.className = 'strat-card ' + cls;
-    } else {
-      sbBo.className = 'strat-status-badge inactive';
-      sbBo.innerHTML = '<div class="strat-status-dot"></div>INACTIVE';
-      scBo.className = 'strat-card';
-    }
-
-    // Reversal card
-    el('ch-'+prefix+'-rev-rsi').textContent    = rv.rsi ? rv.rsi.toFixed(1) : '—';
-    el('ch-'+prefix+'-rev-status').textContent = rv.active ? 'ACTIVE' : 'OFF';
-    el('ch-'+prefix+'-rev-sr').textContent     = rv.at_sr ? 'YES' : 'NO';
+    // VWAP Reversal card
+    el('ch-'+prefix+'-rev-rsi').textContent   = rv.rsi        ? rv.rsi.toFixed(1) : '—';
+    el('ch-'+prefix+'-rev-vwap').textContent  = rv.vwap       ? rv.vwap.toLocaleString('en-IN') : '—';
+    el('ch-'+prefix+'-rev-cross').textContent = rv.vwap_cross ? 'YES' : 'NO';
     el('ct-'+prefix+'-reversal').textContent = 'Last checked: ' + now;
     const sbRv = el('sb-'+prefix+'-reversal');
     const scRv = el('sc-'+prefix+'-reversal');
