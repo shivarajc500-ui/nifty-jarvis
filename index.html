@@ -328,64 +328,66 @@
       </div>
 
       <!-- NIFTY Trend + Pullback -->
+      <!-- NIFTY ORB -->
+      <div class="strat-card" id="sc-N-orb" onclick="openSheet('orb','NIFTY')">
+        <div class="strat-card-header">
+          <div class="strat-card-left">
+            <div class="strat-card-icon">⚡</div>
+            <div>
+              <div class="strat-card-name">Opening Range Breakout</div>
+              <div class="strat-card-sub">9:15–9:30 Range + Volume</div>
+            </div>
+          </div>
+          <div class="strat-status-badge inactive" id="sb-N-orb"><div class="strat-status-dot"></div>INACTIVE</div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="chip-label">ORB High</div><div class="chip-value" id="ch-N-orb-high">—</div></div>
+          <div class="chip"><div class="chip-label">ORB Low</div><div class="chip-value" id="ch-N-orb-low">—</div></div>
+          <div class="chip"><div class="chip-label">Ready</div><div class="chip-value" id="ch-N-orb-ready">—</div></div>
+        </div>
+        <div class="tap-hint">Tap for details ›</div>
+        <div class="strat-checked-time" id="ct-N-orb"></div>
+      </div>
+
+      <!-- NIFTY VWAP Trend -->
       <div class="strat-card" id="sc-N-trend" onclick="openSheet('trend','NIFTY')">
         <div class="strat-card-header">
           <div class="strat-card-left">
             <div class="strat-card-icon">〜</div>
             <div>
-              <div class="strat-card-name">Trend + Pullback</div>
-              <div class="strat-card-sub">EMA 20/50 + RSI 40–65</div>
+              <div class="strat-card-name">VWAP Trend</div>
+              <div class="strat-card-sub">EMA9/21 + VWAP + RSI</div>
             </div>
           </div>
           <div class="strat-status-badge inactive" id="sb-N-trend"><div class="strat-status-dot"></div>INACTIVE</div>
         </div>
         <div class="chip-row">
-          <div class="chip"><div class="chip-label">EMA20</div><div class="chip-value" id="ch-N-trend-ema20">—</div></div>
-          <div class="chip"><div class="chip-label">EMA50</div><div class="chip-value" id="ch-N-trend-ema50">—</div></div>
+          <div class="chip"><div class="chip-label">EMA9</div><div class="chip-value" id="ch-N-trend-ema9">—</div></div>
+          <div class="chip"><div class="chip-label">EMA21</div><div class="chip-value" id="ch-N-trend-ema21">—</div></div>
+          <div class="chip"><div class="chip-label">VWAP</div><div class="chip-value" id="ch-N-trend-vwap">—</div></div>
           <div class="chip"><div class="chip-label">RSI</div><div class="chip-value" id="ch-N-trend-rsi">—</div></div>
-          <div class="chip"><div class="chip-label">Trend</div><div class="chip-value" id="ch-N-trend-dir">—</div></div>
+          <div class="chip"><div class="chip-label">Mode</div><div class="chip-value" id="ch-N-trend-mode">—</div></div>
         </div>
         <div class="tap-hint">Tap for details ›</div>
         <div class="strat-checked-time" id="ct-N-trend"></div>
       </div>
 
-      <!-- NIFTY Breakout -->
-      <div class="strat-card" id="sc-N-breakout" onclick="openSheet('breakout','NIFTY')">
-        <div class="strat-card-header">
-          <div class="strat-card-left">
-            <div class="strat-card-icon">⚡</div>
-            <div>
-              <div class="strat-card-name">Breakout</div>
-              <div class="strat-card-sub">15-min High/Low + Volume</div>
-            </div>
-          </div>
-          <div class="strat-status-badge inactive" id="sb-N-breakout"><div class="strat-status-dot"></div>INACTIVE</div>
-        </div>
-        <div class="chip-row">
-          <div class="chip"><div class="chip-label">15m High</div><div class="chip-value" id="ch-N-bo-high">—</div></div>
-          <div class="chip"><div class="chip-label">15m Low</div><div class="chip-value" id="ch-N-bo-low">—</div></div>
-          <div class="chip"><div class="chip-label">Volume Spike</div><div class="chip-value" id="ch-N-bo-vol">—</div></div>
-        </div>
-        <div class="tap-hint">Tap for details ›</div>
-        <div class="strat-checked-time" id="ct-N-breakout"></div>
-      </div>
-
-      <!-- NIFTY Reversal -->
+      <!-- NIFTY VWAP Reversal -->
       <div class="strat-card" id="sc-N-reversal" onclick="openSheet('reversal','NIFTY')">
         <div class="strat-card-header">
           <div class="strat-card-left">
             <div class="strat-card-icon">🔄</div>
             <div>
-              <div class="strat-card-name">Reversal</div>
-              <div class="strat-card-sub">RSI Extreme + S/R Zone</div>
+              <div class="strat-card-name">VWAP Reversal</div>
+              <div class="strat-card-sub">VWAP Cross + RSI 35/65</div>
             </div>
           </div>
           <div class="strat-status-badge inactive" id="sb-N-reversal"><div class="strat-status-dot"></div>INACTIVE</div>
         </div>
         <div class="chip-row">
           <div class="chip"><div class="chip-label">RSI</div><div class="chip-value" id="ch-N-rev-rsi">—</div></div>
-          <div class="chip"><div class="chip-label">Status</div><div class="chip-value" id="ch-N-rev-status">—</div></div>
-          <div class="chip"><div class="chip-label">At S/R</div><div class="chip-value" id="ch-N-rev-sr">—</div></div>
+          <div class="chip"><div class="chip-label">VWAP</div><div class="chip-value" id="ch-N-rev-vwap">—</div></div>
+          <div class="chip"><div class="chip-label">VWAP Cross</div><div class="chip-value" id="ch-N-rev-cross">—</div></div>
         </div>
         <div class="tap-hint">Tap for details ›</div>
         <div class="strat-checked-time" id="ct-N-reversal"></div>
@@ -397,65 +399,66 @@
         <span class="inst-section-count" id="bn-active-count">0/3 Active</span>
       </div>
 
-      <!-- BANKNIFTY Trend + Pullback -->
+      <!-- BANKNIFTY ORB -->
+      <div class="strat-card" id="sc-B-orb" onclick="openSheet('orb','BANKNIFTY')">
+        <div class="strat-card-header">
+          <div class="strat-card-left">
+            <div class="strat-card-icon">⚡</div>
+            <div>
+              <div class="strat-card-name">Opening Range Breakout</div>
+              <div class="strat-card-sub">9:15–9:30 Range + Volume</div>
+            </div>
+          </div>
+          <div class="strat-status-badge inactive" id="sb-B-orb"><div class="strat-status-dot"></div>INACTIVE</div>
+        </div>
+        <div class="chip-row">
+          <div class="chip"><div class="chip-label">ORB High</div><div class="chip-value" id="ch-B-orb-high">—</div></div>
+          <div class="chip"><div class="chip-label">ORB Low</div><div class="chip-value" id="ch-B-orb-low">—</div></div>
+          <div class="chip"><div class="chip-label">Ready</div><div class="chip-value" id="ch-B-orb-ready">—</div></div>
+        </div>
+        <div class="tap-hint">Tap for details ›</div>
+        <div class="strat-checked-time" id="ct-B-orb"></div>
+      </div>
+
+      <!-- BANKNIFTY VWAP Trend -->
       <div class="strat-card" id="sc-B-trend" onclick="openSheet('trend','BANKNIFTY')">
         <div class="strat-card-header">
           <div class="strat-card-left">
             <div class="strat-card-icon">〜</div>
             <div>
-              <div class="strat-card-name">Trend + Pullback</div>
-              <div class="strat-card-sub">EMA 20/50 + RSI 40–65</div>
+              <div class="strat-card-name">VWAP Trend</div>
+              <div class="strat-card-sub">EMA9/21 + VWAP + RSI</div>
             </div>
           </div>
           <div class="strat-status-badge inactive" id="sb-B-trend"><div class="strat-status-dot"></div>INACTIVE</div>
         </div>
         <div class="chip-row">
-          <div class="chip"><div class="chip-label">EMA20</div><div class="chip-value" id="ch-B-trend-ema20">—</div></div>
-          <div class="chip"><div class="chip-label">EMA50</div><div class="chip-value" id="ch-B-trend-ema50">—</div></div>
+          <div class="chip"><div class="chip-label">EMA9</div><div class="chip-value" id="ch-B-trend-ema9">—</div></div>
+          <div class="chip"><div class="chip-label">EMA21</div><div class="chip-value" id="ch-B-trend-ema21">—</div></div>
+          <div class="chip"><div class="chip-label">VWAP</div><div class="chip-value" id="ch-B-trend-vwap">—</div></div>
           <div class="chip"><div class="chip-label">RSI</div><div class="chip-value" id="ch-B-trend-rsi">—</div></div>
-          <div class="chip"><div class="chip-label">Trend</div><div class="chip-value" id="ch-B-trend-dir">—</div></div>
+          <div class="chip"><div class="chip-label">Mode</div><div class="chip-value" id="ch-B-trend-mode">—</div></div>
         </div>
         <div class="tap-hint">Tap for details ›</div>
         <div class="strat-checked-time" id="ct-B-trend"></div>
       </div>
 
-      <!-- BANKNIFTY Breakout -->
-      <div class="strat-card" id="sc-B-breakout" onclick="openSheet('breakout','BANKNIFTY')">
-        <div class="strat-card-header">
-          <div class="strat-card-left">
-            <div class="strat-card-icon">⚡</div>
-            <div>
-              <div class="strat-card-name">Breakout</div>
-              <div class="strat-card-sub">15-min High/Low + Volume</div>
-            </div>
-          </div>
-          <div class="strat-status-badge inactive" id="sb-B-breakout"><div class="strat-status-dot"></div>INACTIVE</div>
-        </div>
-        <div class="chip-row">
-          <div class="chip"><div class="chip-label">15m High</div><div class="chip-value" id="ch-B-bo-high">—</div></div>
-          <div class="chip"><div class="chip-label">15m Low</div><div class="chip-value" id="ch-B-bo-low">—</div></div>
-          <div class="chip"><div class="chip-label">Volume Spike</div><div class="chip-value" id="ch-B-bo-vol">—</div></div>
-        </div>
-        <div class="tap-hint">Tap for details ›</div>
-        <div class="strat-checked-time" id="ct-B-breakout"></div>
-      </div>
-
-      <!-- BANKNIFTY Reversal -->
+      <!-- BANKNIFTY VWAP Reversal -->
       <div class="strat-card" id="sc-B-reversal" onclick="openSheet('reversal','BANKNIFTY')">
         <div class="strat-card-header">
           <div class="strat-card-left">
             <div class="strat-card-icon">🔄</div>
             <div>
-              <div class="strat-card-name">Reversal</div>
-              <div class="strat-card-sub">RSI Extreme + S/R Zone</div>
+              <div class="strat-card-name">VWAP Reversal</div>
+              <div class="strat-card-sub">VWAP Cross + RSI 35/65</div>
             </div>
           </div>
           <div class="strat-status-badge inactive" id="sb-B-reversal"><div class="strat-status-dot"></div>INACTIVE</div>
         </div>
         <div class="chip-row">
           <div class="chip"><div class="chip-label">RSI</div><div class="chip-value" id="ch-B-rev-rsi">—</div></div>
-          <div class="chip"><div class="chip-label">Status</div><div class="chip-value" id="ch-B-rev-status">—</div></div>
-          <div class="chip"><div class="chip-label">At S/R</div><div class="chip-value" id="ch-B-rev-sr">—</div></div>
+          <div class="chip"><div class="chip-label">VWAP</div><div class="chip-value" id="ch-B-rev-vwap">—</div></div>
+          <div class="chip"><div class="chip-label">VWAP Cross</div><div class="chip-value" id="ch-B-rev-cross">—</div></div>
         </div>
         <div class="tap-hint">Tap for details ›</div>
         <div class="strat-checked-time" id="ct-B-reversal"></div>
