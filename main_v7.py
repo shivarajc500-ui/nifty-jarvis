@@ -218,7 +218,7 @@ _last_reset_date = None
 
 def daily_reset():
     global _last_reset_date
-    today = datetime.date.today().isoformat()
+    today = now_ist().date().isoformat()  # Use IST date, not UTC
     if _last_reset_date == today:
         return
     _last_reset_date = today
@@ -259,8 +259,8 @@ def run_engine():
     for inst, info in SYMBOLS.items():
         try:
             candles = fetch_candles_since_open(info["token"], info["exchange"])
-            if not candles or len(candles) < 5:
-                print(f"[{inst}] Insufficient data ({len(candles) if candles else 0} candles)")
+            if not candles or len(candles) < 2:
+                print(f"[{inst}] Insufficient data ({len(candles) if candles else 0} candles) — skipping")
                 continue
 
             # ── Parse OHLCV ──────────────────────────────────────────────────
@@ -279,11 +279,16 @@ def run_engine():
             r    = rsi(closes)
             vwap = vwap_from_open(highs, lows, closes, vols)
 
-            # ── Market Data Update ────────────────────────────────────────────
+            # ── Market Data Update (always, even outside market hours) ───────
             state["market_data"][inst] = {
                 "ltp":        round(ltp, 2),
                 "change_pct": round(((ltp - closes[0]) / closes[0]) * 100, 2) if closes[0] else 0.0,
             }
+
+            # ── Skip strategy calculations outside market hours ───────────────
+            if not state["market_open"]:
+                print(f"[{inst}] Market closed — LTP updated ({ltp}), skipping strategies")
+                continue
 
             # ── Market Type Detection ─────────────────────────────────────────
             # TREND  = price > 0.3% away from VWAP AND EMA9 slope confirms
