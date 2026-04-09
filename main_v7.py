@@ -36,8 +36,8 @@ CHAT_ID        = os.getenv("TELEGRAM_CHAT_ID",   "8217586252")
 
 # ── Instrument Config ─────────────────────────────────────────────────────────
 SYMBOLS = {
-    "NIFTY":     {"token": "26000", "exchange": "NSE", "step": 50,  "sl_pts": 30,  "tgt_pts": 60},
-    "BANKNIFTY": {"token": "26009", "exchange": "NSE", "step": 100, "sl_pts": 80,  "tgt_pts": 160},
+    "NIFTY":     {"token": "99926000", "exchange": "NSE", "step": 50,  "sl_pts": 30,  "tgt_pts": 60},
+    "BANKNIFTY": {"token": "99926009", "exchange": "NSE", "step": 100, "sl_pts": 80,  "tgt_pts": 160},
 }
 
 # ── Trading Rules ─────────────────────────────────────────────────────────────
