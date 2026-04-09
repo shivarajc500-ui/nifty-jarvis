@@ -15,6 +15,8 @@ Fixes from v6:
 """
 
 import os, time, datetime, threading, requests
+IST = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
+def now_ist(): return datetime.datetime.now(IST)
 import pyotp
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
@@ -147,7 +149,7 @@ def swing_high(highs: list, n: int = 5) -> float:
 
 # ── Market Timing ─────────────────────────────────────────────────────────────
 def market_open() -> bool:
-    n = datetime.datetime.now()
+    n = now_ist()
     if n.weekday() >= 5:
         return False
     start = n.replace(hour=MARKET_START[0], minute=MARKET_START[1], second=0, microsecond=0)
@@ -156,14 +158,14 @@ def market_open() -> bool:
 
 def in_orb_window() -> bool:
     """True if current time is in the ORB signal window (9:30–10:15)."""
-    n = datetime.datetime.now()
+    n = now_ist()
     start = n.replace(hour=ORB_END[0],        minute=ORB_END[1],        second=0, microsecond=0)
     end   = n.replace(hour=ORB_SIGNAL_END[0], minute=ORB_SIGNAL_END[1], second=0, microsecond=0)
     return start <= n <= end
 
 def in_orb_build_window() -> bool:
     """True if current time is in the ORB build window (9:15–9:30)."""
-    n = datetime.datetime.now()
+    n = now_ist()
     start = n.replace(hour=ORB_START[0], minute=ORB_START[1], second=0, microsecond=0)
     end   = n.replace(hour=ORB_END[0],   minute=ORB_END[1],   second=0, microsecond=0)
     return start <= n <= end
@@ -175,7 +177,7 @@ def fetch_candles_since_open(token: str, exchange: str) -> list | None:
     Returns list of [timestamp, open, high, low, close, volume] or None.
     """
     try:
-        now  = datetime.datetime.now()
+        now  = now_ist()
         frm  = now.replace(hour=9, minute=15, second=0, microsecond=0)
         r = smart_api.getCandleData({
             "exchange":    exchange,
@@ -198,9 +200,9 @@ def login() -> bool:
         d = smart_api.generateSession(CLIENT_ID, PASSWORD, totp)
         if d and d.get("status"):
             state["auth_token"] = d["data"]["jwtToken"]
-            state["last_login"] = datetime.datetime.now().isoformat()
+            state["last_login"] = now_ist().isoformat()
             state["error"]      = None
-            print(f"[LOGIN] OK at {datetime.datetime.now().strftime('%H:%M:%S')}")
+            print(f"[LOGIN] OK at {now_ist().strftime('%H:%M:%S')}")
             return True
         msg = d.get("message", "Login failed") if d else "No response"
         state["error"] = msg
@@ -238,14 +240,14 @@ def signal_allowed(inst: str) -> bool:
     if ist["loss_streak"] >= MAX_LOSS_STREAK:
         return False
     if ist["last_signal_time"]:
-        elapsed = (datetime.datetime.now() - ist["last_signal_time"]).total_seconds()
+        elapsed = (now_ist() - ist["last_signal_time"]).total_seconds()
         if elapsed < COOLDOWN_SECONDS:
             return False
     return True
 
 # ── Main Engine ───────────────────────────────────────────────────────────────
 def run_engine():
-    print(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] Engine tick")
+    print(f"[{now_ist().strftime('%H:%M:%S')}] Engine tick")
 
     if not state["auth_token"]:
         print("[ENGINE] Not logged in — skipping")
@@ -448,7 +450,7 @@ def run_engine():
                 "risk_reward": rr,
                 "strategies":  agreed,
                 "confidence":  confidence,
-                "timestamp":   datetime.datetime.now().isoformat(),
+                "timestamp":   now_ist().isoformat(),
                 "ltp":         ltp,
                 "ema9":        e9,
                 "ema21":       e21,
@@ -472,7 +474,7 @@ def run_engine():
             # Activate
             state["current_signal"]         = sig
             ist["trades_today"]            += 1
-            ist["last_signal_time"]         = datetime.datetime.now()
+            ist["last_signal_time"]         = now_ist()
             ist["last_signal_dir"]          = dom
 
             print(f"[SIGNAL] {inst} {dom} {atm} @ {entry} | SL:{sl} TGT:{tgt} | {confidence} | {'+'.join(agreed)}")
@@ -493,7 +495,7 @@ def run_engine():
                 f"{icon} *Confidence:* {confidence}\n"
                 f"🔬 *Strategy:* {strats}\n"
                 f"📊 *Market:* {mkt_type} | VWAP: {vwap} | RSI: {r}\n"
-                f"🕒 *Time:* {datetime.datetime.now().strftime('%H:%M:%S')}\n"
+                f"🕒 *Time:* {now_ist().strftime('%H:%M:%S')}\n"
                 f"━━━━━━━━━━━━━━━━━━\n"
                 f"_Nifty Jarvis v7 — Discipline Automated_"
             )
@@ -503,7 +505,7 @@ def run_engine():
             print(f"[{inst}] Error: {e}")
             state["error"] = str(e)
 
-    state["last_update"] = datetime.datetime.now().isoformat()
+    state["last_update"] = now_ist().isoformat()
 
 # ── Scheduler ─────────────────────────────────────────────────────────────────
 def scheduler():
