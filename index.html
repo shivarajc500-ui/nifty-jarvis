@@ -1,1018 +1,747 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Nifty Jarvis" />
-  <meta name="theme-color" content="#0a0a0a" />
-  <title>Nifty Jarvis — Signal Engine</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="icon-192.png" />
-  <style>
-    :root {
-      --bg: #0a0a0a;
-      --surface: #141414;
-      --surface2: #1e1e1e;
-      --border: #2a2a2a;
-      --text: #f0f0f0;
-      --muted: #888;
-      --primary: #00d4aa;
-      --primary-dim: rgba(0,212,170,0.12);
-      --ce: #00d4aa;
-      --pe: #ff4d6d;
-      --ce-dim: rgba(0,212,170,0.12);
-      --pe-dim: rgba(255,77,109,0.12);
-      --warning: #f59e0b;
-      --success: #22c55e;
-      --error: #ef4444;
-      --safe-top: env(safe-area-inset-top, 0px);
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif; overflow: hidden; }
-    #app { display: flex; flex-direction: column; height: 100%; padding-top: var(--safe-top); }
-    /* Header */
-    .header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px 10px; background: var(--bg); border-bottom: 1px solid var(--border); flex-shrink: 0; }
-    .header-left h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
-    .header-left p { font-size: 10px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 1px; }
-    .market-badge { display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
-    .market-badge.open { background: rgba(34,197,94,0.15); color: var(--success); }
-    .market-badge.closed { background: rgba(239,68,68,0.12); color: var(--error); }
-    .market-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-    /* Tabs */
-    .tabs { display: flex; background: var(--bg); border-bottom: 1px solid var(--border); flex-shrink: 0; }
-    .tab { flex: 1; padding: 10px 4px 8px; text-align: center; font-size: 10px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; letter-spacing: 0.3px; }
-    .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
-    .tab-icon { font-size: 18px; display: block; margin-bottom: 2px; }
-    /* Content */
-    .content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(var(--safe-bottom) + 10px); }
-    .screen { display: none; padding: 14px; }
-    .screen.active { display: block; }
-    /* Cards */
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
-    .card-title { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
-    /* Ticker */
-    .ticker-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-    .ticker-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
-    .ticker-name { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 1px; }
-    .ticker-price { font-size: 22px; font-weight: 700; margin: 4px 0 2px; letter-spacing: -0.5px; }
-    .ticker-change { font-size: 12px; font-weight: 600; }
-    .ticker-change.up { color: var(--ce); }
-    .ticker-change.down { color: var(--pe); }
-    /* Signal card */
-    .signal-card { border-radius: 16px; padding: 18px; margin-bottom: 12px; border: 1px solid; }
-    .signal-card.ce { background: var(--ce-dim); border-color: rgba(0,212,170,0.3); }
-    .signal-card.pe { background: var(--pe-dim); border-color: rgba(255,77,109,0.3); }
-    .signal-card.none { background: var(--surface); border-color: var(--border); text-align: center; padding: 32px 18px; }
-    .signal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
-    .signal-inst { font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: 1px; }
-    .signal-dir { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
-    .signal-dir.ce { color: var(--ce); }
-    .signal-dir.pe { color: var(--pe); }
-    .signal-strike { font-size: 13px; font-weight: 600; color: var(--muted); margin-top: 2px; }
-    .conf-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-    .conf-badge.HIGH { background: rgba(245,158,11,0.2); color: var(--warning); }
-    .conf-badge.MEDIUM { background: rgba(0,212,170,0.15); color: var(--primary); }
-    .signal-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-    .signal-item label { font-size: 10px; color: var(--muted); display: block; margin-bottom: 3px; font-weight: 600; letter-spacing: 0.5px; }
-    .signal-item span { font-size: 15px; font-weight: 700; }
-    .signal-item span.entry { color: var(--text); }
-    .signal-item span.tgt { color: var(--ce); }
-    .signal-item span.sl { color: var(--pe); }
-    .rr-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255,255,255,0.04); border-radius: 8px; font-size: 12px; margin-bottom: 10px; }
-    .strat-tags { display: flex; gap: 6px; flex-wrap: wrap; }
-    .strat-tag { padding: 3px 8px; background: rgba(255,255,255,0.07); border-radius: 6px; font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 0.5px; }
-    .no-signal-icon { font-size: 40px; margin-bottom: 10px; opacity: 0.4; }
-    .no-signal-text { font-size: 16px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
-    .no-signal-sub { font-size: 12px; color: var(--muted); opacity: 0.6; }
-    /* Strategy cards */
-    .strat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-    .strat-mini { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 8px; text-align: center; }
-    .strat-mini.active-ce { border-color: rgba(0,212,170,0.4); background: var(--ce-dim); }
-    .strat-mini.active-pe { border-color: rgba(255,77,109,0.4); background: var(--pe-dim); }
-    .strat-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); margin: 0 auto 6px; }
-    .strat-dot.ce { background: var(--ce); box-shadow: 0 0 6px var(--ce); }
-    .strat-dot.pe { background: var(--pe); box-shadow: 0 0 6px var(--pe); }
-    .strat-name { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.5px; }
-    .strat-dir { font-size: 13px; font-weight: 800; margin-top: 4px; }
-    .strat-dir.ce { color: var(--ce); }
-    .strat-dir.pe { color: var(--pe); }
-    .strat-dir.off { color: var(--border); font-size: 11px; }
-    .indicator-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
-    .indicator-row:last-child { border-bottom: none; }
-    .ind-label { font-size: 13px; color: var(--muted); }
-    .ind-value { font-size: 14px; font-weight: 700; }
-    /* Strategy Monitor Cards */
-    .strat-monitor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .strat-monitor-title { font-size: 18px; font-weight: 700; }
-    .strat-active-count { font-size: 12px; color: var(--muted); font-weight: 600; }
-    .signal-rule { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(0,212,170,0.08); border: 1px solid rgba(0,212,170,0.2); border-radius: 10px; margin-bottom: 14px; font-size: 12px; color: var(--primary); font-weight: 500; }
-    .strat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: border-color 0.2s; position: relative; overflow: hidden; }
-    .strat-card:active { opacity: 0.85; }
-    .strat-card.active-ce { border-color: rgba(0,212,170,0.4); }
-    .strat-card.active-pe { border-color: rgba(255,77,109,0.4); }
-    .strat-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-    .strat-card-left { display: flex; align-items: center; gap: 10px; }
-    .strat-card-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 16px; }
-    .strat-card-name { font-size: 15px; font-weight: 700; }
-    .strat-card-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
-    .strat-status-badge { display: flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.3px; }
-    .strat-status-badge.inactive { background: rgba(255,255,255,0.06); color: var(--muted); }
-    .strat-status-badge.active-ce { background: rgba(0,212,170,0.15); color: var(--ce); }
-    .strat-status-badge.active-pe { background: rgba(255,77,109,0.15); color: var(--pe); }
-    .strat-status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-    .chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
-    .chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; min-width: 70px; }
-    .chip-label { font-size: 10px; color: var(--muted); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px; }
-    .chip-value { font-size: 14px; font-weight: 700; }
-    .tap-hint { font-size: 11px; color: var(--muted); text-align: right; margin-top: 4px; }
-    .strat-checked-time { font-size: 11px; color: var(--muted); text-align: right; margin-top: 6px; }
-    /* Instrument section header in Strategies tab */
-    .inst-section-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 14px; border-radius: 12px; margin-bottom: 10px;
-      font-size: 14px; font-weight: 800; letter-spacing: 0.5px;
-    }
-    .inst-section-header.nifty { background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.25); color: var(--ce); }
-    .inst-section-header.banknifty { background: rgba(255,77,109,0.08); border: 1px solid rgba(255,77,109,0.2); color: var(--pe); }
-    .inst-section-count { font-size: 11px; font-weight: 600; opacity: 0.8; }
-    /* Bottom Sheet */
-    .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
-    .sheet-overlay.open { opacity: 1; pointer-events: all; }
-    .bottom-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-radius: 20px 20px 0 0; z-index: 201; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.32,0.72,0,1); max-height: 85vh; overflow-y: auto; padding-bottom: calc(var(--safe-bottom) + 20px); }
-    .bottom-sheet.open { transform: translateY(0); }
-    .sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 16px; }
-    .sheet-header { display: flex; justify-content: space-between; align-items: center; padding: 0 18px 14px; border-bottom: 1px solid var(--border); }
-    .sheet-title { font-size: 18px; font-weight: 700; }
-    .sheet-close { width: 28px; height: 28px; border-radius: 50%; background: var(--surface2); border: none; color: var(--muted); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .sheet-body { padding: 16px 18px; }
-    .sheet-chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-    .sheet-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; min-width: 80px; }
-    .sheet-chip-label { font-size: 10px; color: var(--muted); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px; }
-    .sheet-chip-value { font-size: 16px; font-weight: 700; }
-    .sheet-section { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin: 16px 0 8px; }
-    .sheet-condition { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 13px; line-height: 1.5; }
-    .sheet-condition .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); flex-shrink: 0; margin-top: 5px; }
-    .sheet-warning { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); border-radius: 10px; padding: 10px 14px; font-size: 12px; color: var(--warning); line-height: 1.5; margin-top: 12px; }
-    /* History */
-    .hist-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-    .hist-left .inst { font-size: 12px; font-weight: 700; color: var(--muted); }
-    .hist-left .dir { font-size: 16px; font-weight: 800; margin: 2px 0; }
-    .hist-left .dir.ce { color: var(--ce); }
-    .hist-left .dir.pe { color: var(--pe); }
-    .hist-left .time { font-size: 11px; color: var(--muted); }
-    .hist-right { text-align: right; }
-    .hist-entry { font-size: 13px; font-weight: 600; }
-    .hist-strike { font-size: 11px; color: var(--muted); margin-top: 2px; }
-    .hist-status { font-size: 11px; font-weight: 700; margin-top: 4px; padding: 2px 8px; border-radius: 10px; display: inline-block; }
-    .hist-status.ACTIVE { background: rgba(0,212,170,0.15); color: var(--ce); }
-    .hist-status.CLOSED { background: rgba(255,255,255,0.07); color: var(--muted); }
-    /* Settings */
-    .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); }
-    .settings-row:last-child { border-bottom: none; }
-    .settings-label { font-size: 14px; font-weight: 500; }
-    .settings-value { font-size: 13px; color: var(--muted); font-weight: 600; }
-    .settings-value.ok { color: var(--success); }
-    .settings-value.err { color: var(--error); }
-    /* Ping button */
-    .ping-btn { position: fixed; bottom: calc(var(--safe-bottom) + 70px); right: 18px; width: 52px; height: 52px; border-radius: 50%; background: var(--primary); border: none; color: #000; font-size: 20px; cursor: pointer; box-shadow: 0 4px 20px rgba(0,212,170,0.4); display: flex; align-items: center; justify-content: center; transition: transform 0.15s; z-index: 100; }
-    .ping-btn:active { transform: scale(0.92); }
-    .ping-btn.spinning { animation: spin 0.8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    /* Server banner */
-    .server-banner { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 10px; font-size: 12px; font-weight: 600; margin-bottom: 12px; }
-    .server-banner.ok { background: rgba(34,197,94,0.1); color: var(--success); border: 1px solid rgba(34,197,94,0.2); }
-    .server-banner.err { background: rgba(239,68,68,0.1); color: var(--error); border: 1px solid rgba(239,68,68,0.2); }
-    .server-banner.loading { background: rgba(245,158,11,0.1); color: var(--warning); border: 1px solid rgba(245,158,11,0.2); }
-    /* Instrument selector */
-    .inst-selector { display: flex; background: var(--surface2); border-radius: 10px; padding: 3px; margin-bottom: 12px; }
-    .inst-btn { flex: 1; padding: 7px; text-align: center; font-size: 12px; font-weight: 700; border-radius: 8px; cursor: pointer; transition: all 0.2s; color: var(--muted); letter-spacing: 0.5px; }
-    .inst-btn.active { background: var(--primary); color: #000; }
-    /* Trades counter */
-    .trades-bar { display: flex; gap: 6px; margin-bottom: 12px; }
-    .trade-dot { flex: 1; height: 4px; border-radius: 2px; background: var(--border); }
-    .trade-dot.used { background: var(--primary); }
-    /* Empty state */
-    .empty { text-align: center; padding: 40px 20px; color: var(--muted); }
-    .empty-icon { font-size: 36px; margin-bottom: 10px; opacity: 0.4; }
-    /* Loading skeleton */
-    .skeleton { background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; height: 16px; }
-    @keyframes shimmer { to { background-position: -200% 0; } }
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 0; }
-    /* Toast */
-    .toast { position: fixed; top: calc(var(--safe-top) + 60px); left: 50%; transform: translateX(-50%) translateY(-20px); background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; opacity: 0; transition: all 0.3s; z-index: 999; white-space: nowrap; }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    /* Version tag */
-    .version-tag { text-align: center; font-size: 10px; color: var(--border); padding: 8px; letter-spacing: 1px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Nifty Jarvis">
+<meta name="theme-color" content="#0a0e1a">
+<link rel="manifest" href="manifest.json">
+<title>Nifty Jarvis — Signal Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0a0e1a;
+  --bg2:       #111827;
+  --bg3:       #1a2235;
+  --border:    #1e2d45;
+  --text:      #e2e8f0;
+  --muted:     #64748b;
+  --ce:        #00d4aa;
+  --ce-bg:     rgba(0,212,170,0.08);
+  --pe:        #ff4d6d;
+  --pe-bg:     rgba(255,77,109,0.08);
+  --gold:      #f59e0b;
+  --accent:    #3b82f6;
+  --font-mono: 'Space Mono', monospace;
+  --font-sans: 'Syne', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,14,26,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.topbar-title { font-size: 16px; font-weight: 800; letter-spacing: 0.05em; }
+.topbar-title span { color: var(--ce); }
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--muted);
+  box-shadow: 0 0 0 0 transparent;
+  transition: all 0.3s;
+}
+.status-dot.live {
+  background: var(--ce);
+  box-shadow: 0 0 0 4px rgba(0,212,170,0.2);
+  animation: pulse 2s infinite;
+}
+.status-dot.closed { background: var(--pe); }
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 0 4px rgba(0,212,170,0.2); }
+  50%      { box-shadow: 0 0 0 8px rgba(0,212,170,0.05); }
+}
+
+/* ── TICKER BAR ── */
+.ticker-bar {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex; gap: 20px;
+}
+.ticker-item { display: flex; flex-direction: column; gap: 2px; }
+.ticker-name { font-size: 9px; color: var(--muted); letter-spacing: 0.1em; font-family: var(--font-mono); }
+.ticker-price { font-size: 16px; font-weight: 700; font-family: var(--font-mono); }
+.ticker-change { font-size: 11px; font-family: var(--font-mono); }
+.ticker-change.up { color: var(--ce); }
+.ticker-change.dn { color: var(--pe); }
+
+/* ── NAV TABS ── */
+.nav-tabs {
+  display: flex;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto; scrollbar-width: none;
+}
+.nav-tabs::-webkit-scrollbar { display: none; }
+.tab-btn {
+  flex: 1; min-width: 70px;
+  padding: 12px 8px;
+  font-size: 11px; font-weight: 600;
+  font-family: var(--font-sans);
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  background: none; border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer; transition: all 0.2s;
+  white-space: nowrap;
+}
+.tab-btn.active { color: var(--ce); border-bottom-color: var(--ce); }
+
+/* ── PAGES ── */
+.page { display: none; padding: 16px; padding-bottom: 32px; }
+.page.active { display: block; }
+
+/* ── SIGNAL CARD ── */
+.signal-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  position: relative; overflow: hidden;
+  transition: border-color 0.3s;
+}
+.signal-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--border);
+  transition: background 0.3s;
+}
+.signal-card.ce::before { background: var(--ce); }
+.signal-card.pe::before { background: var(--pe); }
+.signal-card.ce { border-color: rgba(0,212,170,0.3); background: linear-gradient(135deg, var(--bg2) 0%, rgba(0,212,170,0.04) 100%); }
+.signal-card.pe { border-color: rgba(255,77,109,0.3); background: linear-gradient(135deg, var(--bg2) 0%, rgba(255,77,109,0.04) 100%); }
+
+.signal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.signal-dir {
+  font-size: 22px; font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.signal-dir.ce { color: var(--ce); }
+.signal-dir.pe { color: var(--pe); }
+.signal-inst { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: var(--font-mono); }
+.signal-badge {
+  font-size: 10px; font-weight: 700;
+  padding: 4px 10px; border-radius: 20px;
+  font-family: var(--font-mono); letter-spacing: 0.05em;
+}
+.badge-high { background: rgba(245,158,11,0.15); color: var(--gold); border: 1px solid rgba(245,158,11,0.3); }
+.badge-medium { background: rgba(59,130,246,0.15); color: var(--accent); border: 1px solid rgba(59,130,246,0.3); }
+
+.signal-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px; margin-bottom: 16px;
+}
+.signal-row { display: flex; flex-direction: column; gap: 3px; }
+.signal-label { font-size: 9px; color: var(--muted); letter-spacing: 0.1em; font-family: var(--font-mono); }
+.signal-value { font-size: 15px; font-weight: 700; font-family: var(--font-mono); }
+.signal-value.ce { color: var(--ce); }
+.signal-value.pe { color: var(--pe); }
+
+.rr-bar {
+  background: var(--bg3); border-radius: 8px; padding: 10px 14px;
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 12px;
+}
+.rr-label { font-size: 9px; color: var(--muted); font-family: var(--font-mono); letter-spacing: 0.1em; }
+.rr-value { font-size: 13px; font-weight: 700; font-family: var(--font-mono); color: var(--gold); }
+
+.strat-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.strat-tag {
+  font-size: 9px; font-weight: 700; padding: 3px 8px;
+  border-radius: 4px; font-family: var(--font-mono); letter-spacing: 0.08em;
+  background: var(--bg3); color: var(--muted); border: 1px solid var(--border);
+}
+.strat-tag.active { background: rgba(59,130,246,0.15); color: var(--accent); border-color: rgba(59,130,246,0.3); }
+
+.signal-time { font-size: 10px; color: var(--muted); margin-top: 12px; font-family: var(--font-mono); }
+
+/* ── NO SIGNAL ── */
+.no-signal {
+  background: var(--bg2); border: 1px dashed var(--border);
+  border-radius: 12px; padding: 40px 20px;
+  text-align: center;
+}
+.no-signal-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.4; }
+.no-signal-text { font-size: 14px; color: var(--muted); }
+.no-signal-sub { font-size: 11px; color: var(--muted); opacity: 0.6; margin-top: 6px; font-family: var(--font-mono); }
+
+/* ── STAT CARDS ── */
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+.stat-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 10px; text-align: center;
+}
+.stat-val { font-size: 20px; font-weight: 800; font-family: var(--font-mono); }
+.stat-lbl { font-size: 9px; color: var(--muted); letter-spacing: 0.08em; margin-top: 3px; }
+
+/* ── SECTION HEADER ── */
+.section-hdr {
+  font-size: 9px; font-weight: 700; color: var(--muted);
+  letter-spacing: 0.15em; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-hdr::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── STRATEGY CARDS ── */
+.strat-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px; margin-bottom: 10px;
+  transition: border-color 0.3s;
+}
+.strat-card.ce { border-color: rgba(0,212,170,0.4); }
+.strat-card.pe { border-color: rgba(255,77,109,0.4); }
+.strat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.strat-name { font-size: 12px; font-weight: 700; letter-spacing: 0.05em; }
+.strat-pill {
+  font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 10px;
+  font-family: var(--font-mono);
+}
+.pill-ce { background: rgba(0,212,170,0.15); color: var(--ce); }
+.pill-pe { background: rgba(255,77,109,0.15); color: var(--pe); }
+.pill-off { background: var(--bg3); color: var(--muted); }
+.strat-data { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.strat-kv { display: flex; flex-direction: column; gap: 2px; }
+.strat-k { font-size: 9px; color: var(--muted); font-family: var(--font-mono); letter-spacing: 0.08em; }
+.strat-v { font-size: 13px; font-weight: 700; font-family: var(--font-mono); }
+
+/* ── HISTORY ── */
+.hist-item {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px; margin-bottom: 8px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.hist-left { display: flex; flex-direction: column; gap: 3px; }
+.hist-dir { font-size: 13px; font-weight: 700; font-family: var(--font-mono); }
+.hist-dir.ce { color: var(--ce); }
+.hist-dir.pe { color: var(--pe); }
+.hist-meta { font-size: 10px; color: var(--muted); font-family: var(--font-mono); }
+.hist-right { text-align: right; }
+.hist-entry { font-size: 13px; font-weight: 700; font-family: var(--font-mono); }
+.hist-time { font-size: 10px; color: var(--muted); font-family: var(--font-mono); }
+
+/* ── PING BUTTON ── */
+.ping-btn {
+  width: 100%; padding: 14px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text);
+  font-family: var(--font-sans); font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s; letter-spacing: 0.05em;
+  margin-bottom: 16px;
+}
+.ping-btn:active { background: var(--border); transform: scale(0.98); }
+
+/* ── INSTRUMENT TOGGLE ── */
+.inst-toggle {
+  display: flex; gap: 8px; margin-bottom: 16px;
+}
+.inst-btn {
+  flex: 1; padding: 10px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--muted);
+  font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s; letter-spacing: 0.05em;
+}
+.inst-btn.active {
+  background: rgba(59,130,246,0.1);
+  border-color: var(--accent); color: var(--accent);
+}
+
+/* ── MARKET STATUS ── */
+.market-status {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; border-radius: 8px; margin-bottom: 16px;
+  font-size: 11px; font-family: var(--font-mono); font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.market-status.open { background: rgba(0,212,170,0.08); color: var(--ce); border: 1px solid rgba(0,212,170,0.2); }
+.market-status.closed { background: rgba(255,77,109,0.08); color: var(--pe); border: 1px solid rgba(255,77,109,0.2); }
+
+/* ── LOADING ── */
+.loading { text-align: center; padding: 40px; color: var(--muted); font-size: 12px; font-family: var(--font-mono); }
+.spin { display: inline-block; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── ERROR ── */
+.error-bar {
+  background: rgba(255,77,109,0.1); border: 1px solid rgba(255,77,109,0.3);
+  border-radius: 8px; padding: 10px 14px; margin-bottom: 12px;
+  font-size: 11px; color: var(--pe); font-family: var(--font-mono);
+  display: none;
+}
+.error-bar.show { display: block; }
+</style>
 </head>
 <body>
-<div id="app">
-  <!-- Header -->
-  <div class="header">
-    <div class="header-left">
-      <h1>⚡ Nifty Jarvis</h1>
-      <p>Discipline Automated</p>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div>
+    <div class="topbar-title">NIFTY <span>JARVIS</span></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span style="font-size:10px;color:var(--muted);font-family:var(--font-mono);" id="versionLabel">v7.0</span>
+    <div class="status-dot" id="statusDot"></div>
+  </div>
+</div>
+
+<!-- TICKER BAR -->
+<div class="ticker-bar">
+  <div class="ticker-item">
+    <div class="ticker-name">NIFTY</div>
+    <div class="ticker-price" id="niftyPrice">—</div>
+    <div class="ticker-change" id="niftyChange">—</div>
+  </div>
+  <div class="ticker-item">
+    <div class="ticker-name">BANKNIFTY</div>
+    <div class="ticker-price" id="bnPrice">—</div>
+    <div class="ticker-change" id="bnChange">—</div>
+  </div>
+  <div class="ticker-item" style="margin-left:auto;text-align:right;">
+    <div class="ticker-name">LAST UPDATE</div>
+    <div style="font-size:12px;font-family:var(--font-mono);color:var(--muted);" id="lastUpdate">—</div>
+    <div style="font-size:10px;font-family:var(--font-mono);color:var(--muted);" id="tradesCount">0 / 5 signals</div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav-tabs">
+  <button class="tab-btn active" onclick="showPage('dashboard')">SIGNAL</button>
+  <button class="tab-btn" onclick="showPage('strategies')">STRATEGY</button>
+  <button class="tab-btn" onclick="showPage('history')">HISTORY</button>
+  <button class="tab-btn" onclick="showPage('status')">STATUS</button>
+</div>
+
+<!-- ERROR BAR -->
+<div style="padding:0 16px;">
+  <div class="error-bar" id="errorBar">⚠ Cannot reach server</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 1: SIGNAL (DASHBOARD)
+════════════════════════════════════════════════ -->
+<div class="page active" id="page-dashboard">
+
+  <div id="marketStatusBar" class="market-status closed">● MARKET CLOSED</div>
+
+  <button class="ping-btn" onclick="pingServer()">⚡ REFRESH SIGNAL NOW</button>
+
+  <div class="section-hdr">CURRENT SIGNAL</div>
+  <div id="signalArea"><div class="loading"><span class="spin">◌</span> Loading...</div></div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 2: STRATEGY MONITOR
+════════════════════════════════════════════════ -->
+<div class="page" id="page-strategies">
+
+  <div class="inst-toggle">
+    <button class="inst-btn active" id="instNifty" onclick="setInst('NIFTY')">NIFTY</button>
+    <button class="inst-btn" id="instBN" onclick="setInst('BANKNIFTY')">BANKNIFTY</button>
+  </div>
+
+  <div class="section-hdr">TREND + PULLBACK</div>
+  <div class="strat-card" id="sc-trend">
+    <div class="strat-header">
+      <div class="strat-name">📈 TREND</div>
+      <div class="strat-pill pill-off" id="sp-trend">INACTIVE</div>
     </div>
-    <div id="marketBadge" class="market-badge closed">
-      <div class="dot"></div>
-      <span id="marketText">LOADING</span>
+    <div class="strat-data">
+      <div class="strat-kv"><div class="strat-k">EMA 20</div><div class="strat-v" id="sv-ema20">—</div></div>
+      <div class="strat-kv"><div class="strat-k">EMA 50</div><div class="strat-v" id="sv-ema50">—</div></div>
+      <div class="strat-kv"><div class="strat-k">RSI</div><div class="strat-v" id="sv-rsi-trend">—</div></div>
+      <div class="strat-kv"><div class="strat-k">DIRECTION</div><div class="strat-v" id="sv-trend-dir">—</div></div>
     </div>
   </div>
 
-  <!-- Tabs -->
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab('dashboard')">
-      <span class="tab-icon">📊</span>Dashboard
+  <div class="section-hdr">BREAKOUT</div>
+  <div class="strat-card" id="sc-breakout">
+    <div class="strat-header">
+      <div class="strat-name">🚀 BREAKOUT</div>
+      <div class="strat-pill pill-off" id="sp-breakout">INACTIVE</div>
     </div>
-    <div class="tab" onclick="switchTab('strategies')">
-      <span class="tab-icon">🔬</span>Strategies
-    </div>
-    <div class="tab" onclick="switchTab('history')">
-      <span class="tab-icon">📋</span>History
-    </div>
-    <div class="tab" onclick="switchTab('settings')">
-      <span class="tab-icon">⚙️</span>Settings
+    <div class="strat-data">
+      <div class="strat-kv"><div class="strat-k">HIGH 30M</div><div class="strat-v" id="sv-bo-high">—</div></div>
+      <div class="strat-kv"><div class="strat-k">LOW 30M</div><div class="strat-v" id="sv-bo-low">—</div></div>
+      <div class="strat-kv"><div class="strat-k">VOL SPIKE</div><div class="strat-v" id="sv-bo-vol">—</div></div>
+      <div class="strat-kv"><div class="strat-k">DIRECTION</div><div class="strat-v" id="sv-bo-dir">—</div></div>
     </div>
   </div>
 
-  <!-- Content -->
-  <div class="content">
-
-    <!-- DASHBOARD -->
-    <div id="screen-dashboard" class="screen active">
-      <div id="serverBanner" class="server-banner loading">⏳ Connecting to server...</div>
-
-      <!-- Ticker -->
-      <div class="ticker-row">
-        <div class="ticker-card">
-          <div class="ticker-name">NIFTY</div>
-          <div class="ticker-price" id="niftyPrice">—</div>
-          <div class="ticker-change" id="niftyChange">—</div>
-        </div>
-        <div class="ticker-card">
-          <div class="ticker-name">BANK NIFTY</div>
-          <div class="ticker-price" id="bnPrice">—</div>
-          <div class="ticker-change" id="bnChange">—</div>
-        </div>
-      </div>
-
-      <!-- Instrument selector -->
-      <div class="inst-selector">
-        <div class="inst-btn active" id="btn-NIFTY" onclick="selectInst('NIFTY')">NIFTY</div>
-        <div class="inst-btn" id="btn-BANKNIFTY" onclick="selectInst('BANKNIFTY')">BANKNIFTY</div>
-      </div>
-
-      <!-- Trades today -->
-      <div class="card" style="padding:12px 14px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <span class="card-title" style="margin:0;">Signals Today</span>
-          <span id="tradesCount" style="font-size:13px;font-weight:700;color:var(--primary);">0 / 3</span>
-        </div>
-        <div class="trades-bar">
-          <div class="trade-dot" id="td1"></div>
-          <div class="trade-dot" id="td2"></div>
-          <div class="trade-dot" id="td3"></div>
-        </div>
-      </div>
-
-      <!-- Active Signal -->
-      <div id="signalContainer"></div>
-
-      <!-- Strategy mini — shows selected instrument's strategies -->
-      <div class="card-title" id="stratMiniLabel">Strategy Status — NIFTY</div>
-      <div class="strat-grid">
-        <div class="strat-mini" id="sm-trend">
-          <div class="strat-dot" id="sd-trend"></div>
-          <div class="strat-name">TREND</div>
-          <div class="strat-dir off" id="sv-trend">OFF</div>
-        </div>
-        <div class="strat-mini" id="sm-orb">
-          <div class="strat-dot" id="sd-orb"></div>
-          <div class="strat-name">ORB</div>
-          <div class="strat-dir off" id="sv-orb">OFF</div>
-        </div>
-        <div class="strat-mini" id="sm-reversal">
-          <div class="strat-dot" id="sd-reversal"></div>
-          <div class="strat-name">REVERSAL</div>
-          <div class="strat-dir off" id="sv-reversal">OFF</div>
-        </div>
-      </div>
-
-      <div class="card" style="padding:10px 14px;">
-        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);">
-          <span>🕐</span>
-          <span>Trading Window: 9:15 AM – 3:10 PM IST &nbsp;•&nbsp; Max 5 signals/day</span>
-        </div>
-      </div>
+  <div class="section-hdr">REVERSAL</div>
+  <div class="strat-card" id="sc-reversal">
+    <div class="strat-header">
+      <div class="strat-name">🔄 REVERSAL</div>
+      <div class="strat-pill pill-off" id="sp-reversal">INACTIVE</div>
     </div>
-
-    <!-- STRATEGIES — shows BOTH NIFTY and BANKNIFTY sections -->
-    <div id="screen-strategies" class="screen">
-      <!-- Header -->
-      <div class="strat-monitor-header">
-        <div class="strat-monitor-title">Strategy Monitor</div>
-        <div class="strat-active-count" id="stratActiveCount">0/6 Active</div>
-      </div>
-      <!-- Signal rule -->
-      <div class="signal-rule">🟢 Signal fires only when <strong style="margin:0 4px">2+ strategies agree</strong> per instrument</div>
-
-      <!-- ── NIFTY SECTION ── -->
-      <div class="inst-section-header nifty">
-        <span>📈 NIFTY</span>
-        <span class="inst-section-count" id="nifty-active-count">0/3 Active</span>
-      </div>
-
-      <!-- NIFTY Trend + Pullback -->
-      <!-- NIFTY ORB -->
-      <div class="strat-card" id="sc-N-orb" onclick="openSheet('orb','NIFTY')">
-        <div class="strat-card-header">
-          <div class="strat-card-left">
-            <div class="strat-card-icon">⚡</div>
-            <div>
-              <div class="strat-card-name">Opening Range Breakout</div>
-              <div class="strat-card-sub">9:15–9:30 Range + Volume</div>
-            </div>
-          </div>
-          <div class="strat-status-badge inactive" id="sb-N-orb"><div class="strat-status-dot"></div>INACTIVE</div>
-        </div>
-        <div class="chip-row">
-          <div class="chip"><div class="chip-label">ORB High</div><div class="chip-value" id="ch-N-orb-high">—</div></div>
-          <div class="chip"><div class="chip-label">ORB Low</div><div class="chip-value" id="ch-N-orb-low">—</div></div>
-          <div class="chip"><div class="chip-label">Ready</div><div class="chip-value" id="ch-N-orb-ready">—</div></div>
-        </div>
-        <div class="tap-hint">Tap for details ›</div>
-        <div class="strat-checked-time" id="ct-N-orb"></div>
-      </div>
-
-      <!-- NIFTY VWAP Trend -->
-      <div class="strat-card" id="sc-N-trend" onclick="openSheet('trend','NIFTY')">
-        <div class="strat-card-header">
-          <div class="strat-card-left">
-            <div class="strat-card-icon">〜</div>
-            <div>
-              <div class="strat-card-name">VWAP Trend</div>
-              <div class="strat-card-sub">EMA9/21 + VWAP + RSI</div>
-            </div>
-          </div>
-          <div class="strat-status-badge inactive" id="sb-N-trend"><div class="strat-status-dot"></div>INACTIVE</div>
-        </div>
-        <div class="chip-row">
-          <div class="chip"><div class="chip-label">EMA9</div><div class="chip-value" id="ch-N-trend-ema9">—</div></div>
-          <div class="chip"><div class="chip-label">EMA21</div><div class="chip-value" id="ch-N-trend-ema21">—</div></div>
-          <div class="chip"><div class="chip-label">VWAP</div><div class="chip-value" id="ch-N-trend-vwap">—</div></div>
-          <div class="chip"><div class="chip-label">RSI</div><div class="chip-value" id="ch-N-trend-rsi">—</div></div>
-          <div class="chip"><div class="chip-label">Mode</div><div class="chip-value" id="ch-N-trend-mode">—</div></div>
-        </div>
-        <div class="tap-hint">Tap for details ›</div>
-        <div class="strat-checked-time" id="ct-N-trend"></div>
-      </div>
-
-      <!-- NIFTY VWAP Reversal -->
-      <div class="strat-card" id="sc-N-reversal" onclick="openSheet('reversal','NIFTY')">
-        <div class="strat-card-header">
-          <div class="strat-card-left">
-            <div class="strat-card-icon">🔄</div>
-            <div>
-              <div class="strat-card-name">VWAP Reversal</div>
-              <div class="strat-card-sub">VWAP Cross + RSI 35/65</div>
-            </div>
-          </div>
-          <div class="strat-status-badge inactive" id="sb-N-reversal"><div class="strat-status-dot"></div>INACTIVE</div>
-        </div>
-        <div class="chip-row">
-          <div class="chip"><div class="chip-label">RSI</div><div class="chip-value" id="ch-N-rev-rsi">—</div></div>
-          <div class="chip"><div class="chip-label">VWAP</div><div class="chip-value" id="ch-N-rev-vwap">—</div></div>
-          <div class="chip"><div class="chip-label">VWAP Cross</div><div class="chip-value" id="ch-N-rev-cross">—</div></div>
-        </div>
-        <div class="tap-hint">Tap for details ›</div>
-        <div class="strat-checked-time" id="ct-N-reversal"></div>
-      </div>
-
-      <!-- ── BANKNIFTY SECTION ── -->
-      <div class="inst-section-header banknifty" style="margin-top:8px;">
-        <span>📉 BANKNIFTY</span>
-        <span class="inst-section-count" id="bn-active-count">0/3 Active</span>
-      </div>
-
-      <!-- BANKNIFTY ORB -->
-      <div class="strat-card" id="sc-B-orb" onclick="openSheet('orb','BANKNIFTY')">
-        <div class="strat-card-header">
-          <div class="strat-card-left">
-            <div class="strat-card-icon">⚡</div>
-            <div>
-              <div class="strat-card-name">Opening Range Breakout</div>
-              <div class="strat-card-sub">9:15–9:30 Range + Volume</div>
-            </div>
-          </div>
-          <div class="strat-status-badge inactive" id="sb-B-orb"><div class="strat-status-dot"></div>INACTIVE</div>
-        </div>
-        <div class="chip-row">
-          <div class="chip"><div class="chip-label">ORB High</div><div class="chip-value" id="ch-B-orb-high">—</div></div>
-          <div class="chip"><div class="chip-label">ORB Low</div><div class="chip-value" id="ch-B-orb-low">—</div></div>
-          <div class="chip"><div class="chip-label">Ready</div><div class="chip-value" id="ch-B-orb-ready">—</div></div>
-        </div>
-        <div class="tap-hint">Tap for details ›</div>
-        <div class="strat-checked-time" id="ct-B-orb"></div>
-      </div>
-
-      <!-- BANKNIFTY VWAP Trend -->
-      <div class="strat-card" id="sc-B-trend" onclick="openSheet('trend','BANKNIFTY')">
-        <div class="strat-card-header">
-          <div class="strat-card-left">
-            <div class="strat-card-icon">〜</div>
-            <div>
-              <div class="strat-card-name">VWAP Trend</div>
-              <div class="strat-card-sub">EMA9/21 + VWAP + RSI</div>
-            </div>
-          </div>
-          <div class="strat-status-badge inactive" id="sb-B-trend"><div class="strat-status-dot"></div>INACTIVE</div>
-        </div>
-        <div class="chip-row">
-          <div class="chip"><div class="chip-label">EMA9</div><div class="chip-value" id="ch-B-trend-ema9">—</div></div>
-          <div class="chip"><div class="chip-label">EMA21</div><div class="chip-value" id="ch-B-trend-ema21">—</div></div>
-          <div class="chip"><div class="chip-label">VWAP</div><div class="chip-value" id="ch-B-trend-vwap">—</div></div>
-          <div class="chip"><div class="chip-label">RSI</div><div class="chip-value" id="ch-B-trend-rsi">—</div></div>
-          <div class="chip"><div class="chip-label">Mode</div><div class="chip-value" id="ch-B-trend-mode">—</div></div>
-        </div>
-        <div class="tap-hint">Tap for details ›</div>
-        <div class="strat-checked-time" id="ct-B-trend"></div>
-      </div>
-
-      <!-- BANKNIFTY VWAP Reversal -->
-      <div class="strat-card" id="sc-B-reversal" onclick="openSheet('reversal','BANKNIFTY')">
-        <div class="strat-card-header">
-          <div class="strat-card-left">
-            <div class="strat-card-icon">🔄</div>
-            <div>
-              <div class="strat-card-name">VWAP Reversal</div>
-              <div class="strat-card-sub">VWAP Cross + RSI 35/65</div>
-            </div>
-          </div>
-          <div class="strat-status-badge inactive" id="sb-B-reversal"><div class="strat-status-dot"></div>INACTIVE</div>
-        </div>
-        <div class="chip-row">
-          <div class="chip"><div class="chip-label">RSI</div><div class="chip-value" id="ch-B-rev-rsi">—</div></div>
-          <div class="chip"><div class="chip-label">VWAP</div><div class="chip-value" id="ch-B-rev-vwap">—</div></div>
-          <div class="chip"><div class="chip-label">VWAP Cross</div><div class="chip-value" id="ch-B-rev-cross">—</div></div>
-        </div>
-        <div class="tap-hint">Tap for details ›</div>
-        <div class="strat-checked-time" id="ct-B-reversal"></div>
-      </div>
+    <div class="strat-data">
+      <div class="strat-kv"><div class="strat-k">RSI</div><div class="strat-v" id="sv-rsi-rev">—</div></div>
+      <div class="strat-kv"><div class="strat-k">AT S/R</div><div class="strat-v" id="sv-sr">—</div></div>
+      <div class="strat-kv"><div class="strat-k">DIRECTION</div><div class="strat-v" id="sv-rev-dir">—</div></div>
+      <div class="strat-kv"><div class="strat-k">STATUS</div><div class="strat-v" id="sv-rev-status">—</div></div>
     </div>
+  </div>
 
-    <!-- BOTTOM SHEET OVERLAY -->
-    <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
-    <div class="bottom-sheet" id="bottomSheet">
-      <div class="sheet-handle"></div>
-      <div class="sheet-header">
-        <div>
-          <div class="sheet-title" id="sheetTitle">Strategy</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:2px;" id="sheetInst"></div>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div class="strat-status-badge inactive" id="sheetBadge"><div class="strat-status-dot"></div>INACTIVE</div>
-          <button class="sheet-close" onclick="closeSheet()">✕</button>
-        </div>
-      </div>
-      <div class="sheet-body" id="sheetBody"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 3: HISTORY
+════════════════════════════════════════════════ -->
+<div class="page" id="page-history">
+  <div class="section-hdr">SIGNAL HISTORY</div>
+  <div id="historyArea"><div class="loading"><span class="spin">◌</span> Loading...</div></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 4: STATUS
+════════════════════════════════════════════════ -->
+<div class="page" id="page-status">
+  <div class="section-hdr">SYSTEM STATUS</div>
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-val" id="st-login" style="font-size:18px;">—</div>
+      <div class="stat-lbl">LOGIN</div>
     </div>
-
-    <!-- HISTORY -->
-    <div id="screen-history" class="screen">
-      <div class="strat-monitor-header" style="margin-bottom:14px;">
-        <div class="strat-monitor-title">Signal History</div>
-      </div>
-      <div id="historyContainer">
-        <div class="empty"><div class="empty-icon">📋</div><div style="font-size:15px;font-weight:600;margin-bottom:6px;">No Signal History</div><div style="font-size:12px;">Signals will appear here once generated</div></div>
-      </div>
+    <div class="stat-card">
+      <div class="stat-val" id="st-market" style="font-size:18px;">—</div>
+      <div class="stat-lbl">MARKET</div>
     </div>
-
-    <!-- SETTINGS -->
-    <div id="screen-settings" class="screen">
-      <div class="strat-monitor-header" style="margin-bottom:14px;">
-        <div class="strat-monitor-title">Settings</div>
-      </div>
-      <div class="card">
-        <div class="settings-row">
-          <span class="settings-label">Server Status</span>
-          <span class="settings-value" id="set-status">—</span>
-        </div>
-        <div class="settings-row">
-          <span class="settings-label">Engine Version</span>
-          <span class="settings-value" id="set-version">—</span>
-        </div>
-        <div class="settings-row">
-          <span class="settings-label">Last Login</span>
-          <span class="settings-value" id="set-login">—</span>
-        </div>
-        <div class="settings-row">
-          <span class="settings-label">Last Update</span>
-          <span class="settings-value" id="set-update">—</span>
-        </div>
-        <div class="settings-row">
-          <span class="settings-label">Instruments</span>
-          <span class="settings-value">NIFTY + BANKNIFTY</span>
-        </div>
-        <div class="settings-row">
-          <span class="settings-label">Max Signals/Day</span>
-          <span class="settings-value">3 per instrument</span>
-        </div>
-        <div class="settings-row">
-          <span class="settings-label">Trading Window</span>
-          <span class="settings-value">9:20 AM – 3:10 PM</span>
-        </div>
-      </div>
-      <div class="version-tag">NIFTY JARVIS v6.0 — DISCIPLINE AUTOMATED</div>
+    <div class="stat-card">
+      <div class="stat-val" id="st-trades">0</div>
+      <div class="stat-lbl">SIGNALS</div>
     </div>
+  </div>
 
-  </div><!-- /content -->
-</div><!-- /app -->
+  <div class="strat-card" style="margin-bottom:12px;">
+    <div class="strat-data" style="grid-template-columns:1fr;">
+      <div class="strat-kv"><div class="strat-k">SERVER</div><div class="strat-v" style="font-size:11px;color:var(--muted);">13.61.74.91:8000</div></div>
+      <div class="strat-kv" style="margin-top:8px;"><div class="strat-k">VERSION</div><div class="strat-v" id="st-version">—</div></div>
+      <div class="strat-kv" style="margin-top:8px;"><div class="strat-k">LAST LOGIN</div><div class="strat-v" style="font-size:11px;" id="st-lastlogin">—</div></div>
+      <div class="strat-kv" style="margin-top:8px;"><div class="strat-k">LAST UPDATE</div><div class="strat-v" style="font-size:11px;" id="st-lastupdate">—</div></div>
+      <div class="strat-kv" style="margin-top:8px;"><div class="strat-k">ERROR</div><div class="strat-v" style="font-size:11px;color:var(--pe);" id="st-error">none</div></div>
+    </div>
+  </div>
 
-<!-- Ping FAB -->
-<button class="ping-btn" id="pingBtn" onclick="doPing()" title="Ping engine">⚡</button>
-
-<!-- Toast -->
-<div class="toast" id="toast"></div>
+  <div class="section-hdr">TRADING RULES v7</div>
+  <div class="strat-card">
+    <div class="strat-data" style="grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="strat-kv"><div class="strat-k">WINDOW</div><div class="strat-v" style="font-size:11px;">9:20–3:10</div></div>
+      <div class="strat-kv"><div class="strat-k">MAX SIGNALS</div><div class="strat-v">5 / day</div></div>
+      <div class="strat-kv"><div class="strat-k">STOP LOSS</div><div class="strat-v" style="color:var(--pe);">0.5%</div></div>
+      <div class="strat-kv"><div class="strat-k">TARGET</div><div class="strat-v" style="color:var(--ce);">0.8%</div></div>
+      <div class="strat-kv"><div class="strat-k">COOLDOWN</div><div class="strat-v">5 min</div></div>
+      <div class="strat-kv"><div class="strat-k">DIR BLOCK</div><div class="strat-v">30 min</div></div>
+      <div class="strat-kv"><div class="strat-k">EMA ZONE</div><div class="strat-v">±1.0%</div></div>
+      <div class="strat-kv"><div class="strat-k">VOTES NEEDED</div><div class="strat-v">1 / 3</div></div>
+    </div>
+  </div>
+</div>
 
 <script>
-// ── Config ──────────────────────────────────────────────────────────────────
-// Auto-discovery: tunnel manager on EC2 pushes current URL to this file on every boot
-const TUNNEL_URL_SOURCE = 'https://raw.githubusercontent.com/shivarajc500-ui/nifty-jarvis/main/tunnel_url.txt';
-let SERVER_DIRECT = 'https://historical-best-personalized-thousand.trycloudflare.com';
-function apiUrl(path) { return SERVER_DIRECT + path; }
-
-async function discoverTunnelUrl() {
-  try {
-    const r = await fetch(TUNNEL_URL_SOURCE + '?t=' + Date.now(), {cache:'no-store', signal:AbortSignal.timeout(8000)});
-    if (r.ok) {
-      const url = (await r.text()).trim();
-      if (url.startsWith('https://')) {
-        SERVER_DIRECT = url;
-        console.log('Tunnel URL loaded:', url);
-      }
-    }
-  } catch(e) {
-    console.warn('Could not load tunnel URL, using default:', SERVER_DIRECT);
-  }
-}
-
+const EC2 = 'http://13.61.74.91:8000';
 let currentInst = 'NIFTY';
-let lastData = null;
-let autoRefreshTimer = null;
+let autoTimer = null;
 
-// ── Tab switching ────────────────────────────────────────────────────────────
-function switchTab(name) {
-  document.querySelectorAll('.tab').forEach((t,i) => {
-    const names = ['dashboard','strategies','history','settings'];
-    t.classList.toggle('active', names[i] === name);
-  });
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + name).classList.add('active');
+// ── PAGE NAV ──────────────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const tabs = ['dashboard','strategies','history','status'];
+  document.querySelectorAll('.tab-btn')[tabs.indexOf(name)].classList.add('active');
+  if (name === 'history') fetchHistory();
+  if (name === 'status')  fetchStatus();
 }
 
-function selectInst(inst) {
+function setInst(inst) {
   currentInst = inst;
-  document.getElementById('btn-NIFTY').classList.toggle('active', inst === 'NIFTY');
-  document.getElementById('btn-BANKNIFTY').classList.toggle('active', inst === 'BANKNIFTY');
-  document.getElementById('stratMiniLabel').textContent = 'Strategy Status — ' + inst;
-  if (lastData) {
-    renderSignal(lastData);
-    renderStratMini(lastData.strategy_status || {});
-  }
+  document.getElementById('instNifty').classList.toggle('active', inst === 'NIFTY');
+  document.getElementById('instBN').classList.toggle('active', inst === 'BANKNIFTY');
+  updateStrategyDisplay(window._lastStrategies);
 }
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+// ── FETCH HELPERS ─────────────────────────────────────────────────────────────
+async function apiFetch(endpoint) {
+  const res = await fetch(EC2 + endpoint, { signal: AbortSignal.timeout(8000) });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
 }
 
-// ── Fetch ────────────────────────────────────────────────────────────────────
-async function fetchData() {
+function showError(msg) {
+  const bar = document.getElementById('errorBar');
+  bar.textContent = '⚠ ' + msg;
+  bar.classList.add('show');
+  document.getElementById('statusDot').className = 'status-dot';
+}
+function hideError() {
+  document.getElementById('errorBar').classList.remove('show');
+}
+
+// ── FORMAT HELPERS ────────────────────────────────────────────────────────────
+function fmt(n) { return n ? Number(n).toLocaleString('en-IN', {maximumFractionDigits:2}) : '—'; }
+function fmtTime(iso) {
+  if (!iso) return '—';
   try {
-    const [signalRes, statusRes, histRes] = await Promise.all([
-      fetch(apiUrl('/api/signal'), {signal: AbortSignal.timeout(12000)}),
-      fetch(apiUrl('/api/status'), {signal: AbortSignal.timeout(12000)}),
-      fetch(apiUrl('/api/history'), {signal: AbortSignal.timeout(12000)}),
-    ]);
-    const signal = await signalRes.json();
-    const status = await statusRes.json();
-    const hist   = await histRes.json();
-    lastData = signal;
-    updateUI(signal, status, hist);
-    setBanner(true);
+    return new Date(iso).toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  } catch { return iso.substr(11,8); }
+}
+
+// ── MAIN FETCH ────────────────────────────────────────────────────────────────
+async function fetchSignal() {
+  try {
+    const data = await apiFetch('/api/signal');
+    hideError();
+    updateTicker(data.market_data);
+    updateMarketStatus(data.market_open);
+    renderSignal(data.signal);
+    window._lastStrategies = data.strategy_status;
+    updateStrategyDisplay(data.strategy_status);
+    document.getElementById('lastUpdate').textContent = fmtTime(data.last_update);
+    document.getElementById('statusDot').className = 'status-dot live';
   } catch(e) {
-    setBanner(false);
-    console.error('Fetch error:', e);
+    showError('Cannot reach server — ' + e.message);
   }
 }
 
-function setBanner(ok) {
-  const b = document.getElementById('serverBanner');
-  if (ok) {
-    b.className = 'server-banner ok';
-    b.textContent = '✅ Connected — AWS EC2 Server Live';
+async function pingServer() {
+  document.getElementById('signalArea').innerHTML = '<div class="loading"><span class="spin">◌</span> Pinging...</div>';
+  try {
+    const data = await apiFetch('/api/ping');
+    hideError();
+    updateTicker(data.market_data);
+    updateMarketStatus(data.market_open);
+    renderSignal(data.signal);
+    document.getElementById('lastUpdate').textContent = fmtTime(data.last_update);
+    document.getElementById('statusDot').className = 'status-dot live';
+  } catch(e) {
+    showError('Ping failed — ' + e.message);
+    document.getElementById('signalArea').innerHTML = '<div class="no-signal"><div class="no-signal-icon">📡</div><div class="no-signal-text">Server unreachable</div></div>';
+  }
+}
+
+// ── TICKER ────────────────────────────────────────────────────────────────────
+function updateTicker(md) {
+  if (!md) return;
+  const n = md.NIFTY || {};
+  const b = md.BANKNIFTY || {};
+  document.getElementById('niftyPrice').textContent = fmt(n.ltp);
+  document.getElementById('bnPrice').textContent = fmt(b.ltp);
+  const nc = document.getElementById('niftyChange');
+  const bc = document.getElementById('bnChange');
+  const np = n.change_pct || 0;
+  const bp = b.change_pct || 0;
+  nc.textContent = (np >= 0 ? '▲ +' : '▼ ') + np.toFixed(2) + '%';
+  nc.className = 'ticker-change ' + (np >= 0 ? 'up' : 'dn');
+  bc.textContent = (bp >= 0 ? '▲ +' : '▼ ') + bp.toFixed(2) + '%';
+  bc.className = 'ticker-change ' + (bp >= 0 ? 'up' : 'dn');
+}
+
+// ── MARKET STATUS ─────────────────────────────────────────────────────────────
+function updateMarketStatus(open) {
+  const el = document.getElementById('marketStatusBar');
+  if (open) {
+    el.className = 'market-status open';
+    el.textContent = '● MARKET OPEN — 9:20 AM to 3:10 PM IST';
   } else {
-    b.className = 'server-banner err';
-    b.textContent = '❌ Cannot reach server — Check EC2 instance';
+    el.className = 'market-status closed';
+    el.textContent = '● MARKET CLOSED';
   }
 }
 
-// ── Main UI update ───────────────────────────────────────────────────────────
-function updateUI(signal, status, hist) {
-  // Market badge
-  const mb = document.getElementById('marketBadge');
-  const mt = document.getElementById('marketText');
-  if (signal.market_open) {
-    mb.className = 'market-badge open';
-    mt.textContent = 'MARKET OPEN';
-  } else {
-    mb.className = 'market-badge closed';
-    mt.textContent = 'MARKET CLOSED';
-  }
-
-  // Ticker
-  const md = signal.market_data || {};
-  const nifty = md['NIFTY'] || {};
-  const bn    = md['BANKNIFTY'] || {};
-  document.getElementById('niftyPrice').textContent = nifty.ltp ? nifty.ltp.toLocaleString('en-IN') : '—';
-  document.getElementById('bnPrice').textContent    = bn.ltp    ? bn.ltp.toLocaleString('en-IN')    : '—';
-  const nc = nifty.change_pct || 0;
-  const bc = bn.change_pct    || 0;
-  const nel = document.getElementById('niftyChange');
-  const bel = document.getElementById('bnChange');
-  nel.textContent = (nc >= 0 ? '▲ +' : '▼ ') + nc.toFixed(2) + '%';
-  nel.className   = 'ticker-change ' + (nc >= 0 ? 'up' : 'down');
-  bel.textContent = (bc >= 0 ? '▲ +' : '▼ ') + bc.toFixed(2) + '%';
-  bel.className   = 'ticker-change ' + (bc >= 0 ? 'up' : 'down');
-
-  // Trades today
-  const trades = status.trades_today || 0;
-  document.getElementById('tradesCount').textContent = trades + ' / 5';
-  for (let i = 1; i <= 3; i++) {
-    document.getElementById('td' + i).className = 'trade-dot' + (i <= trades ? ' used' : '');
-  }
-
-  // Signal card
-  renderSignal(signal);
-
-  // strategy_status is now { NIFTY: {trend,breakout,reversal}, BANKNIFTY: {trend,breakout,reversal} }
-  const ss = signal.strategy_status || {};
-
-  // Strategy mini on dashboard (for selected instrument)
-  renderStratMini(ss);
-
-  // Full strategy monitor (both instruments)
-  renderStratMonitor(ss);
-
-  // Store for sheet
-  window._stratData = ss;
-
-  // Status settings
-  document.getElementById('set-status').textContent  = status.logged_in ? 'Connected ✅' : 'Disconnected ❌';
-  document.getElementById('set-status').className    = 'settings-value ' + (status.logged_in ? 'ok' : 'err');
-  document.getElementById('set-version').textContent = status.version || '—';
-  if (status.last_login) {
-    const d = new Date(status.last_login);
-    document.getElementById('set-login').textContent = d.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'});
-  }
-  if (status.last_update) {
-    const d = new Date(status.last_update);
-    document.getElementById('set-update').textContent = d.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  }
-
-  // History
-  renderHistory(hist.signals || []);
-}
-
-// ── Strategy mini (dashboard) — shows selected instrument ────────────────────
-function renderStratMini(ss) {
-  const instData = ss[currentInst] || {};
-  ['orb','trend','reversal'].forEach(s => {
-    const data = instData[s] || {};
-    const dot  = document.getElementById('sd-' + s);
-    const val  = document.getElementById('sv-' + s);
-    const card = document.getElementById('sm-' + s);
-    if (data.active && data.direction) {
-      dot.className  = 'strat-dot ' + data.direction.toLowerCase();
-      val.className  = 'strat-dir ' + data.direction.toLowerCase();
-      val.textContent = data.direction;
-      card.className = 'strat-mini active-' + data.direction.toLowerCase();
-    } else {
-      dot.className  = 'strat-dot';
-      val.className  = 'strat-dir off';
-      val.textContent = 'OFF';
-      card.className = 'strat-mini';
-    }
-  });
-}
-
-// ── Full strategy monitor (both instruments) ─────────────────────────────────
-function renderStratMonitor(ss) {
-  const now = new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  let totalActive = 0;
-
-  // Helper to update one instrument's cards
-  function updateInstCards(prefix, instKey) {
-    const instData = ss[instKey] || {};
-    const orb = instData.orb     || {};
-    const t   = instData.trend   || {};
-    const rv  = instData.reversal|| {};
-    let instActive = 0;
-    const el = (id) => document.getElementById(id);
-
-    // ORB card
-    el('ch-'+prefix+'-orb-high').textContent  = orb.orb_high  ? orb.orb_high.toLocaleString('en-IN')  : '—';
-    el('ch-'+prefix+'-orb-low').textContent   = orb.orb_low   ? orb.orb_low.toLocaleString('en-IN')   : '—';
-    el('ch-'+prefix+'-orb-ready').textContent = orb.orb_ready ? 'YES' : 'NO';
-    el('ct-'+prefix+'-orb').textContent = 'Last checked: ' + now;
-    const sbOrb = el('sb-'+prefix+'-orb');
-    const scOrb = el('sc-'+prefix+'-orb');
-    if (orb.active && orb.direction) {
-      instActive++;
-      const cls = orb.direction === 'CE' ? 'active-ce' : 'active-pe';
-      sbOrb.className = 'strat-status-badge ' + cls;
-      sbOrb.innerHTML = '<div class="strat-status-dot"></div>' + (orb.direction === 'CE' ? 'BULLISH' : 'BEARISH');
-      scOrb.className = 'strat-card ' + cls;
-    } else {
-      sbOrb.className = 'strat-status-badge inactive';
-      sbOrb.innerHTML = '<div class="strat-status-dot"></div>INACTIVE';
-      scOrb.className = 'strat-card';
-    }
-
-    // VWAP Trend card
-    el('ch-'+prefix+'-trend-ema9').textContent  = t.ema9  ? t.ema9.toLocaleString('en-IN')  : '—';
-    el('ch-'+prefix+'-trend-ema21').textContent = t.ema21 ? t.ema21.toLocaleString('en-IN') : '—';
-    el('ch-'+prefix+'-trend-vwap').textContent  = t.vwap  ? t.vwap.toLocaleString('en-IN')  : '—';
-    el('ch-'+prefix+'-trend-rsi').textContent   = t.rsi   ? t.rsi.toFixed(1) : '—';
-    el('ch-'+prefix+'-trend-mode').textContent  = t.market_type || '—';
-    el('ct-'+prefix+'-trend').textContent = 'Last checked: ' + now;
-    const sbT = el('sb-'+prefix+'-trend');
-    const scT = el('sc-'+prefix+'-trend');
-    if (t.active && t.direction) {
-      instActive++;
-      const cls = t.direction === 'CE' ? 'active-ce' : 'active-pe';
-      sbT.className = 'strat-status-badge ' + cls;
-      sbT.innerHTML = '<div class="strat-status-dot"></div>' + (t.direction === 'CE' ? 'BULLISH' : 'BEARISH');
-      scT.className = 'strat-card ' + cls;
-    } else {
-      sbT.className = 'strat-status-badge inactive';
-      sbT.innerHTML = '<div class="strat-status-dot"></div>INACTIVE';
-      scT.className = 'strat-card';
-    }
-
-    // VWAP Reversal card
-    el('ch-'+prefix+'-rev-rsi').textContent   = rv.rsi        ? rv.rsi.toFixed(1) : '—';
-    el('ch-'+prefix+'-rev-vwap').textContent  = rv.vwap       ? rv.vwap.toLocaleString('en-IN') : '—';
-    el('ch-'+prefix+'-rev-cross').textContent = rv.vwap_cross ? 'YES' : 'NO';
-    el('ct-'+prefix+'-reversal').textContent = 'Last checked: ' + now;
-    const sbRv = el('sb-'+prefix+'-reversal');
-    const scRv = el('sc-'+prefix+'-reversal');
-    if (rv.active && rv.direction) {
-      instActive++;
-      const cls = rv.direction === 'CE' ? 'active-ce' : 'active-pe';
-      sbRv.className = 'strat-status-badge ' + cls;
-      sbRv.innerHTML = '<div class="strat-status-dot"></div>' + (rv.direction === 'CE' ? 'BULLISH' : 'BEARISH');
-      scRv.className = 'strat-card ' + cls;
-    } else {
-      sbRv.className = 'strat-status-badge inactive';
-      sbRv.innerHTML = '<div class="strat-status-dot"></div>INACTIVE';
-      scRv.className = 'strat-card';
-    }
-
-    return instActive;
-  }
-
-  const nActive = updateInstCards('N', 'NIFTY');
-  const bActive = updateInstCards('B', 'BANKNIFTY');
-  totalActive = nActive + bActive;
-
-  document.getElementById('nifty-active-count').textContent = nActive + '/3 Active';
-  document.getElementById('bn-active-count').textContent    = bActive + '/3 Active';
-  document.getElementById('stratActiveCount').textContent   = totalActive + '/6 Active';
-}
-
-// ── Signal card ──────────────────────────────────────────────────────────────
-function renderSignal(data) {
-  const container = document.getElementById('signalContainer');
-  const sig = data.signal;
-  if (!sig || sig.instrument !== currentInst) {
-    container.innerHTML = `
-      <div class="signal-card none">
-        <div class="no-signal-icon">⏳</div>
-        <div class="no-signal-text">No Active Signal</div>
-        <div class="no-signal-sub">Watching ${currentInst} — Any strategy can trigger a signal</div>
+// ── RENDER SIGNAL ─────────────────────────────────────────────────────────────
+function renderSignal(sig) {
+  const area = document.getElementById('signalArea');
+  if (!sig) {
+    area.innerHTML = `
+      <div class="no-signal">
+        <div class="no-signal-icon">🔍</div>
+        <div class="no-signal-text">No active signal</div>
+        <div class="no-signal-sub">Engine scanning every 60 seconds</div>
       </div>`;
+    document.getElementById('tradesCount').textContent = '0 / 5 signals';
     return;
   }
-  const dir = sig.option_type;
-  const cls = dir === 'CE' ? 'ce' : 'pe';
-  const dirLabel = dir === 'CE' ? '📈 CE — CALL' : '📉 PE — PUT';
-  const strats = (sig.strategies || []).map(s => `<span class="strat-tag">${s.toUpperCase()}</span>`).join('');
-  const ts = sig.timestamp ? new Date(sig.timestamp).toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'}) : '';
-  container.innerHTML = `
+
+  const dir  = sig.option_type;
+  const cls  = dir === 'CE' ? 'ce' : 'pe';
+  const strats = (sig.strategies || []);
+  const tagHtml = ['trend','breakout','reversal'].map(s =>
+    `<span class="strat-tag ${strats.includes(s) ? 'active' : ''}">${s.toUpperCase()}</span>`
+  ).join('');
+
+  area.innerHTML = `
     <div class="signal-card ${cls}">
       <div class="signal-header">
         <div>
-          <div class="signal-inst">${sig.instrument} · ${ts}</div>
-          <div class="signal-dir ${cls}">${dirLabel}</div>
-          <div class="signal-strike">Strike: ${sig.strike || '—'}</div>
+          <div class="signal-dir ${cls}">${dir === 'CE' ? '📈 CALL (CE)' : '📉 PUT (PE)'}</div>
+          <div class="signal-inst">${sig.instrument} · ATM ${sig.strike}</div>
         </div>
-        <div class="conf-badge ${sig.confidence}">${sig.confidence}</div>
+        <div class="signal-badge ${sig.confidence === 'HIGH' ? 'badge-high' : 'badge-medium'}">
+          ${sig.confidence === 'HIGH' ? '🔥' : '⚡'} ${sig.confidence}
+        </div>
       </div>
       <div class="signal-grid">
-        <div class="signal-item">
-          <label>ENTRY</label>
-          <span class="entry">${sig.entry}</span>
+        <div class="signal-row">
+          <div class="signal-label">ENTRY</div>
+          <div class="signal-value">${fmt(sig.entry)}</div>
         </div>
-        <div class="signal-item">
-          <label>TARGET</label>
-          <span class="tgt">${sig.target}</span>
+        <div class="signal-row">
+          <div class="signal-label">STRIKE</div>
+          <div class="signal-value">${sig.strike}</div>
         </div>
-        <div class="signal-item">
-          <label>STOP LOSS</label>
-          <span class="sl">${sig.stop_loss}</span>
+        <div class="signal-row">
+          <div class="signal-label">TARGET</div>
+          <div class="signal-value ce">${fmt(sig.target)}</div>
+        </div>
+        <div class="signal-row">
+          <div class="signal-label">STOP LOSS</div>
+          <div class="signal-value pe">${fmt(sig.stop_loss)}</div>
         </div>
       </div>
-      <div class="rr-row">
-        <span style="color:var(--muted)">Risk : Reward</span>
-        <span style="font-weight:700">1 : ${sig.risk_reward}</span>
+      <div class="rr-bar">
+        <div><div class="rr-label">RISK : REWARD</div><div class="rr-value">1 : ${sig.risk_reward}</div></div>
+        <div style="text-align:right;"><div class="rr-label">RSI</div><div class="rr-value" style="color:var(--accent);">${sig.rsi ? Number(sig.rsi).toFixed(1) : '—'}</div></div>
       </div>
-      <div class="strat-tags">${strats}</div>
+      <div class="strat-tags">${tagHtml}</div>
+      <div class="signal-time">🕒 ${fmtTime(sig.timestamp)} · ${sig.status || 'ACTIVE'}</div>
     </div>`;
+
+  document.getElementById('tradesCount').textContent =
+    (window._lastStatus ? window._lastStatus.trades_today : '?') + ' / 5 signals';
 }
 
-// ── History ──────────────────────────────────────────────────────────────────
-function renderHistory(signals) {
-  const c = document.getElementById('historyContainer');
-  if (!signals.length) {
-    c.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><div style="font-size:15px;font-weight:600;margin-bottom:6px;">No Signal History</div><div style="font-size:12px;">Signals will appear here once generated</div></div>`;
-    return;
+// ── STRATEGY DISPLAY ──────────────────────────────────────────────────────────
+function updateStrategyDisplay(ss) {
+  if (!ss) return;
+  // ss is flat (not per-instrument in v7 backend)
+  const t  = ss.trend    || {};
+  const bo = ss.breakout || {};
+  const rv = ss.reversal || {};
+
+  // Trend
+  document.getElementById('sv-ema20').textContent = fmt(t.ema20);
+  document.getElementById('sv-ema50').textContent = fmt(t.ema50);
+  document.getElementById('sv-rsi-trend').textContent = t.rsi ? Number(t.rsi).toFixed(1) : '—';
+  document.getElementById('sv-trend-dir').textContent = t.direction || '—';
+  setStratPill('sp-trend', 'sc-trend', t.active, t.direction);
+
+  // Breakout
+  document.getElementById('sv-bo-high').textContent = fmt(bo.high30m || bo.high15m);
+  document.getElementById('sv-bo-low').textContent  = fmt(bo.low30m  || bo.low15m);
+  document.getElementById('sv-bo-vol').textContent  = bo.volume_spike ? '✅ YES' : '❌ NO';
+  document.getElementById('sv-bo-dir').textContent  = bo.direction || '—';
+  setStratPill('sp-breakout', 'sc-breakout', bo.active, bo.direction);
+
+  // Reversal
+  document.getElementById('sv-rsi-rev').textContent  = rv.rsi ? Number(rv.rsi).toFixed(1) : '—';
+  document.getElementById('sv-sr').textContent       = rv.at_sr ? '✅ YES' : '❌ NO';
+  document.getElementById('sv-rev-dir').textContent  = rv.direction || '—';
+  document.getElementById('sv-rev-status').textContent = rv.active ? 'ACTIVE' : 'OFF';
+  setStratPill('sp-reversal', 'sc-reversal', rv.active, rv.direction);
+}
+
+function setStratPill(pillId, cardId, active, dir) {
+  const pill = document.getElementById(pillId);
+  const card = document.getElementById(cardId);
+  if (active && dir) {
+    const isCE = dir === 'CE';
+    pill.textContent = isCE ? '▲ BULLISH' : '▼ BEARISH';
+    pill.className = 'strat-pill ' + (isCE ? 'pill-ce' : 'pill-pe');
+    card.className = 'strat-card ' + (isCE ? 'ce' : 'pe');
+  } else {
+    pill.textContent = 'INACTIVE';
+    pill.className = 'strat-pill pill-off';
+    card.className = 'strat-card';
   }
-  c.innerHTML = signals.map(s => {
-    const dir = s.option_type;
-    const cls = dir === 'CE' ? 'ce' : 'pe';
-    const ts  = s.timestamp ? new Date(s.timestamp).toLocaleString('en-IN', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
-    return `
+}
+
+// ── HISTORY ───────────────────────────────────────────────────────────────────
+async function fetchHistory() {
+  const area = document.getElementById('historyArea');
+  area.innerHTML = '<div class="loading"><span class="spin">◌</span> Loading...</div>';
+  try {
+    const data = await apiFetch('/api/history');
+    const sigs = data.signals || [];
+    if (!sigs.length) {
+      area.innerHTML = '<div class="no-signal"><div class="no-signal-icon">📋</div><div class="no-signal-text">No history yet</div></div>';
+      return;
+    }
+    area.innerHTML = sigs.map(s => `
       <div class="hist-item">
         <div class="hist-left">
-          <div class="inst">${s.instrument}</div>
-          <div class="dir ${cls}">${dir === 'CE' ? '📈 CE' : '📉 PE'}</div>
-          <div class="time">${ts}</div>
+          <div class="hist-dir ${s.option_type === 'CE' ? 'ce' : 'pe'}">
+            ${s.option_type === 'CE' ? '📈' : '📉'} ${s.instrument} ${s.option_type} ${s.strike}
+          </div>
+          <div class="hist-meta">${(s.strategies||[]).join(' + ').toUpperCase()} · ${s.confidence}</div>
         </div>
         <div class="hist-right">
-          <div class="hist-entry">@ ${s.entry}</div>
-          <div class="hist-strike">Strike: ${s.strike || '—'}</div>
-          <div class="hist-status ${s.status}">${s.status}</div>
+          <div class="hist-entry">${fmt(s.entry)}</div>
+          <div class="hist-time">${fmtTime(s.timestamp)}</div>
         </div>
-      </div>`;
-  }).join('');
-}
-
-// ── Bottom sheet ─────────────────────────────────────────────────────────────
-function openSheet(name, inst) {
-  // inst can be 'NIFTY' or 'BANKNIFTY'
-  const ss = window._stratData || {};
-  const instData = ss[inst] || ss || {};  // fallback for old flat structure
-  const data = instData[name] || {};
-
-  const overlay = document.getElementById('sheetOverlay');
-  const sheet   = document.getElementById('bottomSheet');
-  const title   = document.getElementById('sheetTitle');
-  const badge   = document.getElementById('sheetBadge');
-  const body    = document.getElementById('sheetBody');
-  const instEl  = document.getElementById('sheetInst');
-
-  instEl.textContent = inst || '';
-
-  const configs = {
-    orb: {
-      name: 'Opening Range Breakout',
-      chips: [
-        {label:'ORB High', val: data.orb_high ? data.orb_high.toLocaleString('en-IN') : '—'},
-        {label:'ORB Low',  val: data.orb_low  ? data.orb_low.toLocaleString('en-IN')  : '—'},
-        {label:'Ready',    val: data.orb_ready ? 'YES' : 'NO'},
-      ],
-      howItWorks: 'Calculates the Opening Range from 9:15–9:30 AM candles. A price close above the ORB high with volume ≥1.2× average triggers CE. A close below ORB low triggers PE. Signal window: 9:30–10:15 AM.',
-      conditions: [
-        'ORB range built from 9:15–9:30 AM candles',
-        'Price closes above ORB High → CE signal (9:30–10:15)',
-        'Price closes below ORB Low → PE signal (9:30–10:15)',
-        'Volume must be ≥1.2× the 10-period average',
-      ],
-      whyItWorks: 'The opening range captures institutional order flow from the first 15 minutes. Breakouts from this range with volume have the highest follow-through probability of the day.',
-      warning: null,
-    },
-    trend: {
-      name: 'VWAP Trend',
-      chips: [
-        {label:'EMA9',  val: data.ema9  ? data.ema9.toLocaleString('en-IN')  : '—'},
-        {label:'EMA21', val: data.ema21 ? data.ema21.toLocaleString('en-IN') : '—'},
-        {label:'VWAP',  val: data.vwap  ? data.vwap.toLocaleString('en-IN')  : '—'},
-        {label:'RSI',   val: data.rsi   ? data.rsi.toFixed(1) : '—'},
-        {label:'Mode',  val: data.market_type || '—'},
-      ],
-      howItWorks: 'In TREND mode (price >0.3% from VWAP), signals when EMA9 crosses EMA21 in the direction of VWAP. CE: price above VWAP, EMA9>EMA21, green candle, RSI 50–72. PE: price below VWAP, EMA9<EMA21, red candle, RSI 28–50.',
-      conditions: [
-        'Market must be in TREND mode (price >0.3% from VWAP)',
-        'CE: Price > VWAP AND EMA9 > EMA21 AND green candle AND RSI 50–72',
-        'PE: Price < VWAP AND EMA9 < EMA21 AND red candle AND RSI 28–50',
-      ],
-      whyItWorks: 'VWAP is the institutional benchmark. Trading in the direction of VWAP with EMA momentum confirmation gives high-probability trend entries.',
-      warning: null,
-    },
-    reversal: {
-      name: 'VWAP Reversal',
-      chips: [
-        {label:'RSI',        val: data.rsi        ? data.rsi.toFixed(1) : '—'},
-        {label:'VWAP',       val: data.vwap       ? data.vwap.toLocaleString('en-IN') : '—'},
-        {label:'VWAP Cross', val: data.vwap_cross ? 'YES' : 'NO'},
-      ],
-      howItWorks: 'In SIDEWAYS mode (price near VWAP), signals when price crosses the VWAP with RSI confirmation. CE: previous candle below VWAP, current candle above VWAP, RSI < 65. PE: previous above, current below, RSI > 35.',
-      conditions: [
-        'Market must be in SIDEWAYS mode (price within 0.3% of VWAP)',
-        'CE: Previous candle below VWAP → current candle above VWAP, RSI < 65',
-        'PE: Previous candle above VWAP → current candle below VWAP, RSI > 35',
-      ],
-      whyItWorks: 'In sideways markets, VWAP acts as a magnet. Price oscillates around it — catching the cross with RSI confirmation gives reliable mean-reversion entries.',
-      warning: 'Only fires in SIDEWAYS markets. In strong trends, use the VWAP Trend strategy instead.',
-    },
-  };
-
-  const cfg = configs[name];
-  title.textContent = cfg.name;
-
-  if (data.active && data.direction) {
-    const cls = data.direction === 'CE' ? 'active-ce' : 'active-pe';
-    badge.className = 'strat-status-badge ' + cls;
-    badge.innerHTML = '<div class="strat-status-dot"></div>' + (data.direction === 'CE' ? 'BULLISH' : 'BEARISH');
-  } else {
-    badge.className = 'strat-status-badge inactive';
-    badge.innerHTML = '<div class="strat-status-dot"></div>INACTIVE';
-  }
-
-  const chipsHtml = cfg.chips.map(c => `<div class="sheet-chip"><div class="sheet-chip-label">${c.label}</div><div class="sheet-chip-value">${c.val}</div></div>`).join('');
-  const condsHtml = cfg.conditions.map(c => `<div class="sheet-condition"><div class="dot"></div><span>${c}</span></div>`).join('');
-  const warnHtml  = cfg.warning ? `<div class="sheet-warning">⚠️ ${cfg.warning}</div>` : '';
-
-  body.innerHTML = `
-    <div class="sheet-chip-row">${chipsHtml}</div>
-    <div class="sheet-section">How It Works</div>
-    <p style="font-size:13px;line-height:1.6;color:var(--muted);margin-bottom:4px">${cfg.howItWorks}</p>
-    <div class="sheet-section">Entry Conditions</div>
-    ${condsHtml}
-    <div class="sheet-section">Why It Works</div>
-    <p style="font-size:13px;line-height:1.6;color:var(--muted)">${cfg.whyItWorks}</p>
-    ${warnHtml}
-  `;
-
-  overlay.classList.add('open');
-  sheet.classList.add('open');
-}
-
-function closeSheet() {
-  document.getElementById('sheetOverlay').classList.remove('open');
-  document.getElementById('bottomSheet').classList.remove('open');
-}
-
-// ── Ping ─────────────────────────────────────────────────────────────────────
-async function doPing() {
-  const btn = document.getElementById('pingBtn');
-  btn.classList.add('spinning');
-  btn.disabled = true;
-  try {
-    const res  = await fetch(apiUrl('/api/ping'), {signal: AbortSignal.timeout(15000)});
-    const data = await res.json();
-    showToast('⚡ Engine pinged — data refreshed');
-    lastData = data;
-    await fetchData();
+      </div>`).join('');
   } catch(e) {
-    showToast('❌ Server unreachable');
-  } finally {
-    btn.classList.remove('spinning');
-    btn.disabled = false;
+    area.innerHTML = '<div class="no-signal"><div class="no-signal-icon">⚠</div><div class="no-signal-text">Failed to load</div></div>';
   }
 }
 
-// ── Auto refresh every 60 seconds ────────────────────────────────────────────
+// ── STATUS ────────────────────────────────────────────────────────────────────
+async function fetchStatus() {
+  try {
+    const s = await apiFetch('/api/status');
+    window._lastStatus = s;
+    document.getElementById('st-login').textContent   = s.logged_in ? '✅' : '❌';
+    document.getElementById('st-market').textContent  = s.market_open ? '🟢' : '🔴';
+    document.getElementById('st-trades').textContent  = s.trades_today || 0;
+    document.getElementById('st-version').textContent = s.version || '—';
+    document.getElementById('st-lastlogin').textContent  = fmtTime(s.last_login);
+    document.getElementById('st-lastupdate').textContent = fmtTime(s.last_update);
+    document.getElementById('st-error').textContent   = s.error || 'none';
+    document.getElementById('st-error').style.color   = s.error ? 'var(--pe)' : 'var(--ce)';
+    document.getElementById('versionLabel').textContent = 'v' + (s.version || '7.0');
+  } catch(e) {
+    showError('Status fetch failed');
+  }
+}
+
+// ── AUTO REFRESH ──────────────────────────────────────────────────────────────
 function startAutoRefresh() {
-  fetchData();
-  autoRefreshTimer = setInterval(fetchData, 60000);
+  fetchSignal();
+  autoTimer = setInterval(fetchSignal, 60000);
 }
 
-// Register service worker for PWA offline support
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/nifty-jarvis/sw.js', {scope: '/nifty-jarvis/'}).catch(() => {});
-}
+// ── VISIBILITY ────────────────────────────────────────────────────────────────
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    fetchSignal();
+  }
+});
 
-// Start — auto-discover tunnel URL then begin refresh
-discoverTunnelUrl().then(() => startAutoRefresh());
+// ── INIT ──────────────────────────────────────────────────────────────────────
+startAutoRefresh();
 </script>
+
+<!-- Service Worker Registration -->
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+
 </body>
 </html>
